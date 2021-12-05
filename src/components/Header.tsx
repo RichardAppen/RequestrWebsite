@@ -4,7 +4,7 @@ class Header extends React.Component {
     render() {
         return(
             <div>
-                <h1> AWS Project </h1>
+                <h1> Requestr </h1>
             </div>
         )
     }
