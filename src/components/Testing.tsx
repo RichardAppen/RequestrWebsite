@@ -32,6 +32,7 @@ class Testing extends React.Component<Props, State> {
     render() {
         return(
             <div>
+                <h1> Requestr </h1>
                 <p>
                     {this.state.mainLabel}
                     <button onClick={this.buttonClick}>
