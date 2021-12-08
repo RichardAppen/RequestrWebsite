@@ -4,6 +4,8 @@ import Testing from "./components/Testing";
 import SignUp from "./components/SignUp";
 import Header from "./components/Header";
 import {Route, Routes, BrowserRouter as Router} from "react-router-dom";
+import Login from "./components/Login";
+import Profile from "./components/Profile";
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Routes>
               <Route path="/" element={<Testing incoming={"Testing Props"}/>}></Route>
               <Route path="/SignUp" element={<SignUp></SignUp>}></Route>
+              <Route path="/Login" element={<Login></Login>}></Route>
+              <Route path="/Profile" element={<Profile></Profile>}></Route>
           </Routes>
       </Router>
   );

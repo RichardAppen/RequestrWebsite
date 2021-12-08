@@ -1,0 +1,120 @@
+.account-action-title {
+    margin: auto;
+    width: 20vw;
+    padding: 10px;
+    text-align: center;
+    color: #9d1c00;
+}
+
+.profile-container {
+    width: 300px;
+    margin:auto;
+}
+
+.profile-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.profile-container li div {
+    margin: auto;
+    width: 250px;
+    padding-top: 30px;
+    align-items: center;
+}
+
+.profile-container li div span {
+    text-align: center;
+    padding-top: 15px;
+    margin: 10px auto;
+    display: block;
+    border: solid black 1px;
+    padding-bottom: 10px;
+    border-top: #9d1c00 solid 4px;
+    border-right: #9d1c00 solid 3px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 10px;
+    border-top-left-radius: 5px;
+}
+
+.profile-container li div label {
+    background: #9d1c00;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding: 10px;
+    display: block;
+    text-align: center;
+
+}
+
+.action-container {
+    width: 300px;
+    border: 1px solid black;
+    border-radius: 20px;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
+    margin:auto;
+    border-top: #9d1c00 solid 4px;
+    border-right: #9d1c00 solid 3px;
+}
+
+.action-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.action-container li input {
+    border: 1px solid black;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: block;
+    text-align: center;
+    margin: 10px auto;
+    border-top: #9d1c00 solid 4px;
+    border-right: #9d1c00 solid 3px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 10px;
+    border-top-left-radius: 5px;
+}
+
+.action-container li button {
+    background: #9d1c00;
+    font-size: large;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: block;
+    margin: 10px auto;
+}
+
+.status-message {
+    margin: 20px auto;
+    width: fit-content;
+}
+
+.verify-container {
+    margin: 30px auto;
+    width: fit-content;
+}
+
+.verify-container span {
+    align-items: center;
+    margin-right: 10px;
+}
+
+.verify-container input {
+    margin-right: 15px;
+}
+
+.verify-container button {
+    background: #9d1c00;
+    font-size: large;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}

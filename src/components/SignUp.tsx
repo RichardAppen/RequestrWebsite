@@ -1,10 +1,11 @@
 import React from "react";
 import {BrowserRouter as Router} from 'react-router-dom';
 import Testing from "./Testing";
-import './SignUp.css'
+import './Accounts.css'
 import UserPool from "../UserPool";
 import {ChangeEvent} from "react";
-import {CognitoUserAttribute} from "amazon-cognito-identity-js";
+import {CognitoUser, CognitoUserAttribute} from "amazon-cognito-identity-js";
+import {UserInfo} from "../utils/UserInfo";
 
 interface State {
     firstName: string
@@ -12,12 +13,15 @@ interface State {
     email: string
     username: string
     password: string
+    verificationCode: string
+    verify: boolean
+    user: CognitoUser | null
+    statusMessage: string
 }
 
 interface Props {
 
 }
-
 
 class SignUp extends React.Component<Props, State> {
     constructor(props: Props) {
@@ -27,7 +31,11 @@ class SignUp extends React.Component<Props, State> {
             firstName: "",
             lastName: "",
             password: "",
-            email: ""
+            email: "",
+            verificationCode: "",
+            verify: false,
+            user: null,
+            statusMessage: ""
         }
     }
 
@@ -44,10 +52,34 @@ class SignUp extends React.Component<Props, State> {
         UserPool.signUp(this.state.username, this.state.password, [attName, attEmail], [],(err, data) => {
             if (err) {
                 console.log('error:', err);
+                this.setState({statusMessage: "Encountered " + err})
             } else {
                 console.log(data)
+                this.setState({statusMessage: "Account created successfully! Please verify your account by inputting the code sent to your email.", verify: true})
             }
         })
+
+        const user = new CognitoUser({
+            Username: this.state.username,
+            Pool: UserPool
+        })
+
+        this.setState({user: user})
+    }
+
+    verify = () => {
+        if (this.state.user) {
+            this.state.user.confirmRegistration(this.state.verificationCode, true, (err, result) => {
+                if (err) {
+                    console.log("error: ", err)
+                    this.setState({statusMessage: "Verification code was incorrect. Please try Again"})
+                } else {
+                    console.log(result)
+                    this.setState({statusMessage: "Verification successful!", verify: false})
+                    window.location.href = '/Login'
+                }
+            })
+        }
     }
 
     inputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -72,14 +104,18 @@ class SignUp extends React.Component<Props, State> {
                 this.setState({password: event.target.value})
                 break;
             }
+            case "verify": {
+                this.setState({verificationCode: event.target.value})
+                break;
+            }
         }
     }
 
     render() {
         return (
             <div>
-                <h1 className="signup-title">Sign Up Below</h1>
-                <div className="signup-container">
+                <h1 className="account-action-title">Sign Up Below</h1>
+                <div className="action-container">
                     <ul>
                         <li>
                             <input id="firstName" type="text" placeholder="First Name" onChange={this.inputChange}></input>
@@ -101,6 +137,14 @@ class SignUp extends React.Component<Props, State> {
                         </li>
                     </ul>
                 </div>
+                <div className="status-message">
+                    <span>{this.state.statusMessage}</span>
+                </div>
+                {this.state.verify && <div className="verify-container">
+                    <span>{"Please Enter Verification Code:"}</span>
+                    <input id="verify" type="text" placeholder="Verification Code" onChange={this.inputChange}></input>
+                    <button onClick={this.verify}>Verify</button>
+                </div>}
             </div>
         )
     }
