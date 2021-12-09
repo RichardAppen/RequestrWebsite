@@ -11,6 +11,7 @@ interface State {
     fullname: string | null
     username: string | null
     email: string | null
+    loading: boolean
 }
 
 interface Props {
@@ -24,7 +25,8 @@ class Profile extends React.Component<Props, State> {
         this.state = {
             fullname: null,
             username: null,
-            email: null
+            email: null,
+            loading: false
         }
     }
 
@@ -32,6 +34,7 @@ class Profile extends React.Component<Props, State> {
         const user = UserPool.getCurrentUser()
 
         if (user) {
+            this.setState({loading: true})
             user.getSession(() => {
                 this.setState({username: user.getUsername()})
                 user.getUserAttributes((err, result) => {
@@ -48,6 +51,7 @@ class Profile extends React.Component<Props, State> {
                                 }
                             }
                         })
+                        this.setState({loading: false})
                     }
                 })
             })
@@ -78,6 +82,11 @@ class Profile extends React.Component<Props, State> {
                                 <span> {this.state.email ? this.state.email : ""}</span>
                             </div>
                         </li>
+                        {this.state.loading && <li>
+                            <div>
+                                <div> Loading... </div>
+                            </div>
+                        </li>}
                     </ul>
                 </div>
             </div>

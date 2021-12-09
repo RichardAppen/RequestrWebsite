@@ -48,6 +48,13 @@
 
 }
 
+.profile-container li div div {
+    padding: 10px;
+    display: block;
+    text-align: center;
+
+}
+
 .action-container {
     width: 300px;
     border: 1px solid black;
@@ -88,6 +95,35 @@
     padding-bottom: 10px;
     display: block;
     margin: 10px auto;
+}
+
+.action-container li button.disabled {
+    background: lightgray;
+    font-size: large;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: block;
+    margin: 10px auto;
+}
+
+.action-container li span {
+    font-size: small;
+    margin-left: 10px;
+}
+
+.action-container li span.red {
+    font-size: small;
+    margin-left: 10px;
+    color: red;
+}
+
+.action-container li span.green {
+    font-size: small;
+    margin-left: 10px;
+    color: green;
 }
 
 .status-message {
