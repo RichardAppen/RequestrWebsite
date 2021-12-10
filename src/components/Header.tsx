@@ -54,7 +54,7 @@ class Header extends React.Component<Props, State> {
                         Profile
                     </button>
                     <nav
-                        className={`profile-menu ${this.state.isActive ? "active" : ""}`}
+                        className={this.state.isActive ? "profile-menu active" : "profile-menu"}
                     >
                         {!this.state.signedIn && <ul>
                             <li>
