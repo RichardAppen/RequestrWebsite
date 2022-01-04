@@ -1,0 +1,61 @@
+.group-title {
+    margin: auto;
+    width: 20vw;
+    padding: 10px;
+    text-align: center;
+}
+
+.toolbar-buttons-container {
+    margin:  10px auto;
+    width: fit-content;
+}
+
+.toolbar-buttons {
+    background: #9d1c00;
+    font-size: large;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin: 10px 5px auto;
+}
+
+.group-container {
+    margin: 10px auto;
+    width: 50vw;
+    padding: 10px;
+    text-align: center;
+    border: black 2px solid;
+    border-radius: 4px;
+    background: lightgrey;
+    display: block;
+    box-shadow: black;
+}
+
+.group-name {
+    text-align: left;
+    font-size: x-large;
+    font-weight: bold;
+    color: #9d1c00;
+}
+
+.group-info {
+    margin-left: auto;
+    width: fit-content;
+    font-size: small;
+}
+
+.group-info-headers {
+    text-align: right;
+    width: fit-content;
+    font-style: italic;
+    display: inline-block;
+    margin-right: 5px;
+    font-weight: bold;
+}
+.group-info-entries {
+    text-align: left;
+    width: fit-content;
+    display: inline-block;
+}

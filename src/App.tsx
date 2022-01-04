@@ -7,6 +7,7 @@ import {Route, Routes, BrowserRouter as Router} from "react-router-dom";
 import Login from "./components/Login";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
+import Groups from "./components/Groups";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
               <Route path="/Login" element={<Login></Login>}></Route>
               <Route path="/Profile" element={<Profile></Profile>}></Route>
               <Route path="/Settings" element={<Settings></Settings>}></Route>
+              <Route path="/Groups" element={<Groups></Groups>}></Route>
           </Routes>
       </Router>
   );
