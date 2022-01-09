@@ -1,0 +1,49 @@
+.ticket-side {
+    width: 79vw;
+    text-align: center;
+    display: inline-flex;
+    margin: auto;
+}
+
+.group-info-side {
+    width: 19vw;
+    display: inline-flex;
+    margin: auto 10px
+}
+
+.group-title {
+    margin: auto;
+    width: fit-content;
+    padding: 10px;
+    text-align: center;
+    color: #9d1c00;
+}
+
+.display-block {
+    display: block;
+    margin: auto;
+}
+
+.group-info-your-role-header {
+    width: 18vw;
+    text-align: center;
+    border: black dashed 2px;
+    padding-bottom: 20px;
+}
+
+.member-list {
+    margin-top: 70px;
+    display: block;
+    border: dashed black 2px;
+    text-align: center;
+}
+
+.ticket-title {
+    margin: auto;
+}
+
+.table {
+    width: 60vw;
+    height: 60vh;
+    border: solid #9d1c00 4px;
+}

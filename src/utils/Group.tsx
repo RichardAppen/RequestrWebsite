@@ -3,5 +3,6 @@ export interface Group {
     owner: string,
     usersRole: string,
     numberMembers: number,
-    public: boolean
+    public: boolean,
+    hash?: string
 }

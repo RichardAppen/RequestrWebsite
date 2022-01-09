@@ -8,6 +8,8 @@ import Login from "./components/Login";
 import Profile from "./components/Profile";
 import Settings from "./components/Settings";
 import Groups from "./components/Groups";
+import TicketGroup from "./components/TicketGroup";
+import TicketGroupWrapper from "./components/TicketGroupWrapper";
 
 function App() {
   return (
@@ -24,6 +26,7 @@ function App() {
               <Route path="/Profile" element={<Profile></Profile>}></Route>
               <Route path="/Settings" element={<Settings></Settings>}></Route>
               <Route path="/Groups" element={<Groups></Groups>}></Route>
+              <Route path="/Groups/:hash" element={<TicketGroupWrapper></TicketGroupWrapper>}></Route>
           </Routes>
       </Router>
   );

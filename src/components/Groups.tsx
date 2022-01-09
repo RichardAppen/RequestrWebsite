@@ -4,53 +4,72 @@ import {Group} from "../utils/Group";
 import UserPool from "../UserPool";
 import {ChangeEvent} from "react";
 import {CognitoUser, AuthenticationDetails, CognitoUserAttribute} from "amazon-cognito-identity-js";
+import TicketGroup from "./TicketGroup";
+import {NavLink} from "react-router-dom";
+import { Link } from "react-router-dom";
+import {Md5} from "ts-md5";
 
 interface State {
-    usersGroups: Group[]
+    usersGroups: Group[],
 }
 
 interface Props {
-
 }
 
 class Groups extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
+        // Load groups associated with logged in user
         this.state = {
             usersGroups: [
                 {groupName: "Group Name 1", numberMembers: 0, owner: "Richard Appen", public: true, usersRole: "owner"},
                 {groupName: "Group Name 2", numberMembers: 1, owner: "rich Main", public: true, usersRole: "member"}
             ]
         }
+
+        // Create hash for each group
+        this.state.usersGroups.forEach((group) => {
+            let currGroupMD5 = new Md5()
+            currGroupMD5.appendStr(group.groupName)
+            currGroupMD5.appendStr(group.owner)
+            const finalHash = currGroupMD5.end() as string
+            localStorage.setItem(finalHash, JSON.stringify(group))
+            group.hash = finalHash
+        })
+    }
+
+
+    goToTicketGroup = (group: Group) => {
+        window.location.href = `/Groups/${group.hash}`
     }
 
     render() {
         return(
-            <div>
-                <div className="toolbar-buttons-container">
-                    <button className="toolbar-buttons">Create a Group</button>
-                    <button className="toolbar-buttons">Join a Group</button>
+                <div>
+                    <div className="toolbar-buttons-container">
+                        <button className="toolbar-buttons">Create a Group</button>
+                        <button className="toolbar-buttons">Join a Group</button>
+                    </div>
+                    <h1 className="group-title"> My Groups </h1>
+                    {this.state.usersGroups.map(group =>
+                        <button className="group-container" onClick={() => this.goToTicketGroup(group)}>
+                            <div className="group-name">{group.groupName}</div>
+                            <div className="group-info">
+                                <div className="group-info-headers">
+                                    <div>Your Role:</div>
+                                    <div>Owner:</div>
+                                    <div>Number of Members:</div>
+                                </div>
+                                <div className="group-info-entries">
+                                    <div>{group.usersRole}</div>
+                                    <div>{group.owner}</div>
+                                    <div>{group.numberMembers}</div>
+                                </div>
+                            </div>
+                        </button>
+                    )}
                 </div>
-                <h1 className="group-title"> My Groups </h1>
-                {this.state.usersGroups.map(item =>
-                    <button className="group-container">
-                        <div className="group-name">{item.groupName}</div>
-                        <div className="group-info">
-                            <div className="group-info-headers">
-                                <div>Your Role:</div>
-                                <div>Owner:</div>
-                                <div>Number of Members:</div>
-                            </div>
-                            <div className="group-info-entries">
-                                <div>{item.usersRole}</div>
-                                <div>{item.owner}</div>
-                                <div>{item.numberMembers}</div>
-                            </div>
-                        </div>
-                    </button>
-                )}
-            </div>
         )
     }
 }
