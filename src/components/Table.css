@@ -1,0 +1,101 @@
+.column-headers-row {
+    display: inline-flex;
+    text-align: center;
+    font-weight: bolder;
+    width: 60vw;
+}
+
+.regular-row {
+    display: inline-flex;
+    text-align: center;
+    width: 60vw;
+}
+
+.requestID-header {
+    border: solid black 2px;
+    width: 10vw;
+    padding: 5px 0px 5px;
+}
+
+.requestor-header {
+    border: solid black 2px;
+    width: 11vw;
+    padding: 5px 0px 5px;
+}
+
+.subject-header {
+    border: solid black 2px;
+    width: 19vw;
+    padding: 5px 0px 5px;
+}
+
+.date-header {
+    border: solid black 2px;
+    width: 10vw;
+    padding: 5px 0px 5px;
+}
+
+.status-header {
+    border: solid black 2px;
+    width: 10vw;
+    padding: 5px 0px 5px;
+}
+
+.requestID-entry {
+    border: solid black 1px;
+    width: 10vw;
+    padding: 10px 0px 10px;
+}
+
+.requestor-entry {
+    border: solid black 1px;
+    width: 11vw;
+    padding: 10px 0px 10px;
+}
+
+.subject-entry {
+    border: solid black 1px;
+    width: 19vw;
+    padding: 10px 0px 10px;
+}
+
+.date-entry {
+    border: solid black 1px;
+    width: 10vw;
+    padding: 10px 0px 10px;
+}
+
+.status-entry {
+    border: solid black 1px;
+    width: 10vw;
+    padding: 10px 0px 10px;
+}
+
+.ticket-selected-id {
+    position: relative;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding-top: 10px;
+}
+
+.ticket-selected-back-button {
+    margin: 10px auto 10px 10px;
+    background: #9d1c00;
+    font-size: small;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.ticket-selected-div {
+    border: #9d1c00 solid 2px;
+    height: 0px;
+}
+
+.flex-header-grey {
+    display: flex;
+    background: lightgrey;
+}

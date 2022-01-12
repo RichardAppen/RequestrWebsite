@@ -8,9 +8,12 @@ import {Md5} from "ts-md5";
 import {RouteProps} from "react-router-dom";
 import './TicketGroup.css'
 import './Groups.css'
+import Table from "./Table";
+import {Ticket} from "../utils/Ticket";
 
 interface State {
     group: Group
+    tickets: Ticket[]
 }
 
 interface Props {
@@ -25,6 +28,13 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
         this.state = {
             group: currentGroup ? JSON.parse(currentGroup) : "Invalid Group",
+            tickets: [
+                {ticketId: '1111', requestor: 'rich', subject: '1st', date: '1/09/21', status: 'Pending', description: 'This is a long description about which we can test the individual ticket view and see how it handles wrapped around text and what it may do with it', comments: [["rappen", "Hello", "1/09/12 12:41"], ["rappen", "Hello", "1/09/21 12:40"]]},
+                {ticketId: '2222', requestor: 'rich', subject: '2nd', date: '1/09/21', status: 'Pending', description: '', comments: []},
+                {ticketId: '3333', requestor: 'rich', subject: '3rd', date: '1/09/21', status: 'Pending', description: '', comments: []},
+                {ticketId: '4444', requestor: 'rich', subject: '4th', date: '1/09/21', status: 'Pending', description: '', comments: []},
+                {ticketId: '5555', requestor: 'rich', subject: '5th', date: '1/09/21', status: 'Pending', description: '', comments: []}
+            ]
 
         }
     }
@@ -48,7 +58,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                     <div className='display-block'>
                         <h1 className='ticket-title'> Tickets </h1>
                         <div className='table'>
-
+                            <Table tickets={this.state.tickets}></Table>
                         </div>
                     </div>
                 </div>

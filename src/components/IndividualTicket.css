@@ -1,0 +1,133 @@
+.flex-header {
+    display: flex;
+}
+
+.individual-ticket-header-date {
+    width: fit-content;
+    margin-left: auto;
+    padding: 10px 50px 0px 0px;
+    font-weight: lighter;
+}
+
+.individual-ticket-header-requestor {
+    width: fit-content;
+    margin-right: auto;
+    padding: 10px 0px 0px 50px;
+    font-size: large;
+}
+
+.individual-ticket-header-subject {
+    display: block;
+    text-align: left;
+    padding: 5px 0px 0px 50px;
+    font-size: xx-large;
+    font-weight: bold;
+}
+
+.individual-ticket-header-status {
+    display: block;
+    text-align: left;
+    padding: 5px 0px 0px 50px;
+    font-size: large;
+}
+
+.divider-special {
+    border: 1px solid black;
+    margin: 5px 50px 0px 50px;
+    border-radius: 100px;
+    padding-top: 2px;
+}
+
+.individual-ticket-header-entries {
+    display: block;
+    text-align: left;
+    padding: 30px 0px 0px 50px;
+    text-decoration-line: underline;
+    color: #9d1c00;
+}
+
+.individual-ticket-description {
+    display: block;
+    text-align: left;
+    padding: 0px 0px 0px 50px;
+}
+
+.comment-box {
+    border: solid black 2px;
+    margin: 5px 50px 0px 50px;
+    height: 30vh;
+    scroll-behavior: smooth;
+    overflow: scroll;
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.make-comment {
+    margin: 5px 50px 0px 50px;
+    padding-bottom: 100px;
+}
+
+
+.make-comment input {
+    float: left;
+    width: 80%;
+    border: 1px solid black;
+    padding-bottom: 10px;
+    display: block;
+    margin: auto;
+    border-top: #9d1c00 solid 4px;
+    border-right: #9d1c00 solid 3px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 10px;
+    border-top-left-radius: 5px;
+    text-align: left;
+}
+
+.make-comment div {
+    width: 18%;
+    float: right;
+    margin: auto;
+    align-content: center;
+    display: flex
+}
+
+.make-comment div button {
+    float: left;
+
+    background: #9d1c00;
+    font-size: small;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: block;
+}
+
+.single-comment-container {
+    border: solid lightgrey 2px;
+    border-radius: 100px;
+    padding-left: 15px;
+    margin-top: 5px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+    background: lightgrey;
+    width: 95%;
+}
+
+.single-comment-commenter {
+    width: fit-content;
+    font-size: small;
+    font-weight: bold;
+}
+
+.single-comment-contents {
+    width: fit-content;
+    font-weight: bolder;
+}
+
+.single-comment-date {
+    width: fit-content;
+    font-size: smaller;
+}
+
