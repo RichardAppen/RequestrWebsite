@@ -22,6 +22,7 @@
 .display-block {
     display: block;
     margin: auto;
+    position: relative;
 }
 
 .group-info-your-role-header {
@@ -40,6 +41,21 @@
 
 .ticket-title {
     margin: auto;
+    padding-bottom: 10px;
+}
+
+.new-ticket-button {
+    position: absolute;
+    right: 0;
+    background: #9d1c00;
+    font-size: small;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: block;
+    margin: 10px auto;
 }
 
 .table {

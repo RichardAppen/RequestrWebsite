@@ -10,10 +10,12 @@ import './TicketGroup.css'
 import './Groups.css'
 import Table from "./Table";
 import {Ticket} from "../utils/Ticket";
+import NewTicket from "./NewTicket";
 
 interface State {
     group: Group
     tickets: Ticket[]
+    renderNewTicketWindow: boolean
 }
 
 interface Props {
@@ -34,7 +36,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                 {ticketId: '3333', requestor: 'rich', subject: '3rd', date: '1/09/21', status: 'Pending', description: '', comments: []},
                 {ticketId: '4444', requestor: 'rich', subject: '4th', date: '1/09/21', status: 'Pending', description: '', comments: []},
                 {ticketId: '5555', requestor: 'rich', subject: '5th', date: '1/09/21', status: 'Pending', description: '', comments: []}
-            ]
+            ],
+            renderNewTicketWindow: false
 
         }
     }
@@ -50,38 +53,68 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
         return true
     }
 
+    addTicket = (ticket: Ticket) => {
+        const currTickets = this.state.tickets
+        currTickets.push(ticket)
+        this.setState({tickets: currTickets, renderNewTicketWindow: false})
+    }
+
+    handleNewTicketPressed = () => {
+        this.setState({renderNewTicketWindow: true})
+    }
+
+    backButtonPressed = () => {
+        this.setState({renderNewTicketWindow: false})
+    }
+
     render() {
         return(
             <div>
-                <h1 className='group-title'> Ticket Group: {this.state.group.groupName} </h1>
-                <div className='ticket-side'>
-                    <div className='display-block'>
-                        <h1 className='ticket-title'> Tickets </h1>
-                        <div className='table'>
-                            <Table tickets={this.state.tickets}></Table>
+                {(!UserPool.getCurrentUser()) && <div className={"please-login"}>
+                    Please Login to access this page
+                </div>}
+                {(UserPool.getCurrentUser()) && <div>
+                    <h1 className='group-title'> Ticket Group: {this.state.group.groupName} </h1>
+                    <div className='ticket-side'>
+                        <div className='display-block'>
+                            <button className='new-ticket-button' onClick={this.handleNewTicketPressed}> New Ticket </button>
+                            <h1 className='ticket-title'> Tickets </h1>
+                            <div className='table'>
+                                {this.state.renderNewTicketWindow ?
+                                    <div>
+                                        <div className='flex-header-grey'>
+                                            <button className='ticket-selected-back-button' onClick={this.backButtonPressed}>Back</button>
+                                            <div className='ticket-selected-id'>New Ticket</div>
+                                        </div>
+                                        <div className='ticket-selected-div'></div>
+                                        <NewTicket addTicket={this.addTicket}></NewTicket>
+                                    </div>
+                                    :
+                                    <Table tickets={this.state.tickets}></Table> }
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className='group-info-side'>
-                    <div className='display-block'>
-                        <div className='group-info-your-role-header'>
-                            <h1> Your Role: </h1>
-                            <div> {this.state.group.usersRole}</div>
-                            <h2> Other Info: </h2>
-                            <div className="group-info-headers">
-                                <div>Owner:</div>
-                                <div>Number of Members:</div>
+                    <div className='group-info-side'>
+                        <div className='display-block'>
+                            <div className='group-info-your-role-header'>
+                                <h1> Your Role: </h1>
+                                <div> {this.state.group.usersRole}</div>
+                                <h2> Other Info: </h2>
+                                <div>
+                                    <div className="group-info-headers">Owner:</div>
+                                    <div className="group-info-entries">{this.state.group.owner}</div>
+                                </div>
+                                <div>
+                                    <div className="group-info-headers">Number of Members:</div>
+                                    <div className="group-info-entries">{this.state.group.numberMembers}</div>
+                                </div>
                             </div>
-                            <div className="group-info-entries">
-                                <div>{this.state.group.owner}</div>
-                                <div>{this.state.group.numberMembers}</div>
-                            </div>
+                            {this.loadMemberList() && <div className='member-list'>
+                                <h1> Member List: </h1>
+                            </div>}
                         </div>
-                        {this.loadMemberList() && <div className='member-list'>
-                            <h1> Member List: </h1>
-                        </div>}
                     </div>
-                </div>
+                </div>}
             </div>
         )
     }

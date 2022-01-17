@@ -39,7 +39,7 @@ class Header extends React.Component<Props, State> {
                 <div className="header-title">Requestr</div>
                 <div className="toolbar-container">
                     <button className="toolbar-button" onClick={() => {window.location.href = "/"}}>Home</button>
-                    <button className="toolbar-button" onClick={() => {window.location.href = "/Groups"}}>Groups</button>
+                    {(UserPool.getCurrentUser()) && <button className="toolbar-button" onClick={() => {window.location.href = "/Groups"}}>Groups</button>}
                     <button className="profile-button" onClick={() => {
                         const user = UserPool.getCurrentUser()
                         this.setState({user: user})

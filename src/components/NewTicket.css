@@ -1,0 +1,27 @@
+.subject-input {
+    border: none;
+    box-shadow: none;
+    text-align: left;
+    padding: 0px 0px 0px 0px;
+    font-size: xx-large;
+    font-weight: bold;
+}
+
+.description-input {
+    margin: 20px 0px 0px 0px;
+    width: 95%;
+    font-size: medium;
+    height: 28vh;
+}
+
+.create-ticket-button {
+    background: #9d1c00;
+    font-size: small;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: block;
+    margin: 10px auto;
+}

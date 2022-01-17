@@ -44,6 +44,7 @@
     margin-left: auto;
     width: fit-content;
     font-size: small;
+    text-align: left;
 }
 
 .group-info-headers {
@@ -58,4 +59,11 @@
     text-align: left;
     width: fit-content;
     display: inline-block;
+}
+
+.please-login {
+    font-size: larger;
+    font-weight: bold;
+    padding-top: 30px;
+    text-align: center;
 }

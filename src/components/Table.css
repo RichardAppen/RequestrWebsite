@@ -45,18 +45,21 @@
     border: solid black 1px;
     width: 10vw;
     padding: 10px 0px 10px;
+    overflow: scroll;
 }
 
 .requestor-entry {
     border: solid black 1px;
     width: 11vw;
     padding: 10px 0px 10px;
+    overflow: scroll;
 }
 
 .subject-entry {
     border: solid black 1px;
     width: 19vw;
     padding: 10px 0px 10px;
+    overflow: scroll;
 }
 
 .date-entry {
@@ -72,11 +75,10 @@
 }
 
 .ticket-selected-id {
-    position: relative;
-    width: 100%;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin: 10px auto 10px auto;
     padding-top: 10px;
+    font-weight: bolder;
+    width: fit-content;
 }
 
 .ticket-selected-back-button {
@@ -88,6 +90,8 @@
     border: #9d1c00 1px;
     padding-top: 10px;
     padding-bottom: 10px;
+    left: 0;
+    position: absolute;
 }
 
 .ticket-selected-div {
@@ -98,4 +102,5 @@
 .flex-header-grey {
     display: flex;
     background: lightgrey;
+    position: relative;
 }

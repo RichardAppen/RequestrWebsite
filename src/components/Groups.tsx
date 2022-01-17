@@ -47,6 +47,10 @@ class Groups extends React.Component<Props, State> {
     render() {
         return(
                 <div>
+                    {(!UserPool.getCurrentUser()) && <div className={"please-login"}>
+                        Please Login to access this page
+                    </div>}
+                    {(UserPool.getCurrentUser()) && <div>
                     <div className="toolbar-buttons-container">
                         <button className="toolbar-buttons">Create a Group</button>
                         <button className="toolbar-buttons">Join a Group</button>
@@ -56,19 +60,22 @@ class Groups extends React.Component<Props, State> {
                         <button className="group-container" onClick={() => this.goToTicketGroup(group)}>
                             <div className="group-name">{group.groupName}</div>
                             <div className="group-info">
-                                <div className="group-info-headers">
-                                    <div>Your Role:</div>
-                                    <div>Owner:</div>
-                                    <div>Number of Members:</div>
+                                <div>
+                                    <div className="group-info-headers">Your Role:</div>
+                                    <div className="group-info-entries">{group.usersRole}</div>
                                 </div>
-                                <div className="group-info-entries">
-                                    <div>{group.usersRole}</div>
-                                    <div>{group.owner}</div>
-                                    <div>{group.numberMembers}</div>
+                                <div>
+                                    <div className="group-info-headers">Owner:</div>
+                                    <div className="group-info-entries">{group.owner}</div>
+                                </div>
+                                <div>
+                                    <div className="group-info-headers">Number of Members:</div>
+                                    <div className="group-info-entries">{group.numberMembers}</div>
                                 </div>
                             </div>
                         </button>
                     )}
+                    </div>}
                 </div>
         )
     }

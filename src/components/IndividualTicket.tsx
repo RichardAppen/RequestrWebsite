@@ -41,6 +41,7 @@ class IndividualTicket extends React.Component<Props, State> {
 
     render() {
         return (
+
             <div>
                 <div className='flex-header'>
                     <div className='individual-ticket-header-requestor'>

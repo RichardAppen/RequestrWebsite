@@ -61,34 +61,39 @@ class Profile extends React.Component<Props, State> {
     render() {
         return (
             <div>
-                <h1 className="account-action-title">Your Profile Information</h1>
-                <div className="profile-container">
-                    <ul>
-                        <li>
-                            <div>
-                                <label> Name: </label>
-                                <span> {this.state.fullname ? this.state.fullname : ""}</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div>
-                                <label> Username: </label>
-                                <span> {this.state.username ? this.state.username : ""}</span>
-                            </div>
-                        </li>
-                        <li>
-                            <div>
-                                <label> Email: </label>
-                                <span> {this.state.email ? this.state.email : ""}</span>
-                            </div>
-                        </li>
-                        {this.state.loading && <li>
-                            <div>
-                                <div> Loading... </div>
-                            </div>
-                        </li>}
-                    </ul>
-                </div>
+                {(!UserPool.getCurrentUser()) && <div className={"please-login"}>
+                    Please Login to access this page
+                </div>}
+                {(UserPool.getCurrentUser()) &&<div>
+                    <h1 className="account-action-title">Your Profile Information</h1>
+                    <div className="profile-container">
+                        <ul>
+                            <li>
+                                <div>
+                                    <label> Name: </label>
+                                    <span> {this.state.fullname ? this.state.fullname : ""}</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div>
+                                    <label> Username: </label>
+                                    <span> {this.state.username ? this.state.username : ""}</span>
+                                </div>
+                            </li>
+                            <li>
+                                <div>
+                                    <label> Email: </label>
+                                    <span> {this.state.email ? this.state.email : ""}</span>
+                                </div>
+                            </li>
+                            {this.state.loading && <li>
+                                <div>
+                                    <div> Loading... </div>
+                                </div>
+                            </li>}
+                        </ul>
+                    </div>
+                </div>}
             </div>
         )
     }
