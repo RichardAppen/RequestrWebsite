@@ -1,6 +1,6 @@
 .account-action-title {
     margin: auto;
-    width: 20vw;
+    width: fit-content;
     padding: 10px;
     text-align: center;
     color: #9d1c00;
@@ -126,9 +126,37 @@
     color: green;
 }
 
+.radio-buttons-container {
+    display: block;
+    width: fit-content;
+    margin: auto;
+}
+
+.radio-button-input-div {
+    width: fit-content;
+    padding-left: 5px;
+    display: flex;
+}
+
+.radio-button-titles {
+    display: flex;
+    align-items: center;
+    vertical-align: center;
+    padding-left: 10px;
+
+}
+
 .status-message {
     margin: 20px auto;
     width: fit-content;
+}
+
+.disclaimer {
+    text-align: center;
+    padding-bottom: 30px;
+    width: 100%;
+    position: absolute;
+    bottom: 0%;
 }
 
 .verify-container {

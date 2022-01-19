@@ -1,0 +1,129 @@
+import React from "react";
+import {BrowserRouter as Router} from 'react-router-dom';
+import Testing from "./Testing";
+import './Accounts.css'
+import UserPool from "../UserPool";
+import {ChangeEvent} from "react";
+import {CognitoUser, CognitoUserAttribute} from "amazon-cognito-identity-js";
+import {UserInfo} from "../utils/UserInfo";
+import {PasswordRequirements} from "../utils/PasswordRequirements";
+import {Group} from "../utils/Group";
+import {Md5} from "ts-md5";
+
+interface State {
+    groupName: string,
+    owner: string,
+    usersRole: string,
+    numberMembers: number,
+    public: boolean,
+    hash?: string
+}
+
+interface Props {
+    addGroup: (group: Group) => void;
+}
+
+class CreateGroup extends React.Component<Props, State> {
+    constructor(props: Props) {
+        super(props);
+
+        this.state = {
+            groupName: "",
+            owner: "",
+            usersRole: "",
+            numberMembers: 0,
+            public: true
+        }
+
+    }
+
+    inputChange = (event: ChangeEvent<HTMLInputElement>) => {
+        switch (event.target.id) {
+            case "groupName": {
+                this.setState({groupName: event.target.value})
+                break;
+            }
+            case "public": {
+                this.setState({public: true})
+                break;
+            }
+            case "private": {
+                this.setState({public: false})
+                break;
+            }
+        }
+    }
+
+    createGroupPressed = () => {
+        if (this.state.groupName === "") {
+            return
+        }
+
+        const user = UserPool.getCurrentUser()
+        let username = ""
+        if (user) {
+            user.getSession(() => {
+                username = user.getUsername()
+            })
+        }
+
+        const finalGroupToAdd: Group = {
+            groupName: this.state.groupName,
+            owner: username,
+            usersRole: "Owner",
+            numberMembers: 1,
+            public: this.state.public
+        }
+
+        let currGroupMD5 = new Md5()
+        currGroupMD5.appendStr(finalGroupToAdd.groupName)
+        currGroupMD5.appendStr(finalGroupToAdd.owner)
+        const finalHash = currGroupMD5.end() as string
+        localStorage.setItem(finalHash, JSON.stringify(finalGroupToAdd))
+        finalGroupToAdd.hash = finalHash
+
+        this.props.addGroup(finalGroupToAdd)
+    }
+
+
+    render() {
+        return (
+            <div>
+                <h1 className="account-action-title">Create a new Group</h1>
+                <div className="action-container">
+                    <ul>
+                        <li>
+                            <input id="groupName" type="text" placeholder="Group Name" onChange={this.inputChange}></input>
+                        </li>
+                        <li>
+                            <div className="radio-buttons-container">
+                                <div className="radio-button-input-div">
+                                    <input type="radio" id="public" placeholder="Public?" onChange={this.inputChange} checked={this.state.public}></input>
+                                    <div className="radio-button-titles">
+                                        Public
+                                    </div>
+                                </div>
+                                <div className="radio-button-input-div">
+                                    <input type="radio" id="private" placeholder="Public?" onChange={this.inputChange} checked={!this.state.public}></input>
+                                    <div className="radio-button-titles">
+                                        Private
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li>
+                            <div>
+
+                            </div>
+                        </li>
+                        <li>
+                            <button onClick={this.createGroupPressed}>Create</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        )}
+}
+
+
+export default CreateGroup

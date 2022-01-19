@@ -31,6 +31,7 @@ class Header extends React.Component<Props, State> {
             user.signOut()
             window.location.href = '/Login'
         }
+        localStorage.clear()
     }
 
     render() {

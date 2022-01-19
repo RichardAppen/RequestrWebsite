@@ -168,7 +168,7 @@ class Settings extends React.Component<Props, State> {
                     <div className="status-message">
                         <span>{this.state.nameStatusMessage}</span>
                     </div>
-                    <div className="status-message">
+                    <div className="disclaimer">
                         <span>{"Please note that your email can be used for logging in and thus, cannot be changed"}</span>
                     </div>
                 </div>}
