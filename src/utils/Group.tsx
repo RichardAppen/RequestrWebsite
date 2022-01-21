@@ -4,5 +4,5 @@ export interface Group {
     usersRole: string,
     numberMembers: number,
     public: boolean,
-    hash?: string
+    groupHash?: string
 }

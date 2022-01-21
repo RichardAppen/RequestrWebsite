@@ -16,6 +16,7 @@ interface State {
     group: Group
     tickets: Ticket[]
     renderNewTicketWindow: boolean
+    hashGiven: boolean
 }
 
 interface Props {
@@ -29,7 +30,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
         const currentGroup : string | null = localStorage.getItem(this.props.hash)
 
         this.state = {
-            group: currentGroup ? JSON.parse(currentGroup) : "Invalid Group",
+            group: currentGroup ? JSON.parse(currentGroup) : null,
             tickets: [
                 {ticketId: '1111', requestor: 'rich', subject: '1st', date: '1/09/21', status: 'Pending', description: 'This is a long description about which we can test the individual ticket view and see how it handles wrapped around text and what it may do with it', comments: [["rappen", "Hello", "1/09/12 12:41"], ["rappen", "Hello", "1/09/21 12:40"]]},
                 {ticketId: '2222', requestor: 'rich', subject: '2nd', date: '1/09/21', status: 'Pending', description: '', comments: []},
@@ -37,7 +38,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                 {ticketId: '4444', requestor: 'rich', subject: '4th', date: '1/09/21', status: 'Pending', description: '', comments: []},
                 {ticketId: '5555', requestor: 'rich', subject: '5th', date: '1/09/21', status: 'Pending', description: '', comments: []}
             ],
-            renderNewTicketWindow: false
+            renderNewTicketWindow: false,
+            hashGiven: currentGroup ? true : false
 
         }
     }
@@ -70,10 +72,14 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     render() {
         return(
             <div>
+
+                {(!this.state.hashGiven) && <div className="status-message">
+                    This group link does not exists
+                </div>}
                 {(!UserPool.getCurrentUser()) && <div className={"please-login"}>
                     Please Login to access this page
                 </div>}
-                {(UserPool.getCurrentUser()) && <div>
+                {(UserPool.getCurrentUser()) && (this.state.hashGiven) && <div>
                     <h1 className='group-title'> Ticket Group: {this.state.group.groupName} </h1>
                     <div className='ticket-side'>
                         <div className='display-block'>

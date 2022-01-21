@@ -9,6 +9,7 @@ import {UserInfo} from "../utils/UserInfo";
 import {PasswordRequirements} from "../utils/PasswordRequirements";
 import {Group} from "../utils/Group";
 import {Md5} from "ts-md5";
+import axios from "axios";
 
 interface State {
     groupName: string,
@@ -16,11 +17,13 @@ interface State {
     usersRole: string,
     numberMembers: number,
     public: boolean,
-    hash?: string
+    hash?: string,
+    statusMessage: string
 }
 
 interface Props {
     addGroup: (group: Group) => void;
+    usersGroups: Group[]
 }
 
 class CreateGroup extends React.Component<Props, State> {
@@ -32,7 +35,8 @@ class CreateGroup extends React.Component<Props, State> {
             owner: "",
             usersRole: "",
             numberMembers: 0,
-            public: true
+            public: true,
+            statusMessage: ""
         }
 
     }
@@ -54,35 +58,72 @@ class CreateGroup extends React.Component<Props, State> {
         }
     }
 
+    didGroupNameViolate = () : boolean => {
+        let didViolate = false
+        this.props.usersGroups.forEach((group) => {
+            if (group.groupName == this.state.groupName) {
+                this.setState({statusMessage: "You are already a part of a group with that name"})
+                didViolate = true
+            }
+        })
+
+        return didViolate
+    }
+
     createGroupPressed = () => {
         if (this.state.groupName === "") {
+            this.setState({statusMessage: "The group name cannot be empty."})
+            return
+        }
+
+        if (this.didGroupNameViolate()) {
             return
         }
 
         const user = UserPool.getCurrentUser()
-        let username = ""
+        this.setState({statusMessage: "Loading..."})
         if (user) {
-            user.getSession(() => {
-                username = user.getUsername()
+            user.getSession(async () => {
+                let username = user.getUsername()
+
+                const finalGroupToAdd: Group = {
+                    groupName: this.state.groupName,
+                    owner: username,
+                    usersRole: "Owner",
+                    numberMembers: 1,
+                    public: this.state.public
+                }
+
+                let currGroupMD5 = new Md5()
+                currGroupMD5.appendStr(finalGroupToAdd.groupName)
+                currGroupMD5.appendStr(finalGroupToAdd.owner)
+                const finalHash = currGroupMD5.end() as string
+                localStorage.setItem(finalHash, JSON.stringify(finalGroupToAdd))
+                finalGroupToAdd.groupHash = finalHash
+
+                await axios.post(
+                    "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addGroupEntry",
+                    {
+                        "username" : username,
+                        "groupName" : finalGroupToAdd.groupName,
+                        "groupHash" : finalGroupToAdd.groupHash,
+                        "owner" : username,
+                        "usersRole" : "Owner",
+                        "public" : finalGroupToAdd.public
+                    },
+                    {
+
+                    }
+                ).then((response) => {
+                    this.setState({statusMessage: "Successfully created group! " + response.data})
+                }).catch((error) => {
+                    console.log(error)
+                    this.setState({statusMessage: "Network error"})
+                })
+
+                this.props.addGroup(finalGroupToAdd)
             })
         }
-
-        const finalGroupToAdd: Group = {
-            groupName: this.state.groupName,
-            owner: username,
-            usersRole: "Owner",
-            numberMembers: 1,
-            public: this.state.public
-        }
-
-        let currGroupMD5 = new Md5()
-        currGroupMD5.appendStr(finalGroupToAdd.groupName)
-        currGroupMD5.appendStr(finalGroupToAdd.owner)
-        const finalHash = currGroupMD5.end() as string
-        localStorage.setItem(finalHash, JSON.stringify(finalGroupToAdd))
-        finalGroupToAdd.hash = finalHash
-
-        this.props.addGroup(finalGroupToAdd)
     }
 
 
@@ -120,6 +161,9 @@ class CreateGroup extends React.Component<Props, State> {
                             <button onClick={this.createGroupPressed}>Create</button>
                         </li>
                     </ul>
+                </div>
+                <div className="status-message">
+                    {this.state.statusMessage}
                 </div>
             </div>
         )}

@@ -11,11 +11,13 @@ import {Md5} from "ts-md5";
 import CreateGroup from "./CreateGroup";
 import {Ticket} from "../utils/Ticket";
 import JoinGroup from "./JoinGroup";
+import axios from "axios";
 
 interface State {
     usersGroups: Group[],
     creatingGroup: boolean,
     joiningGroup: boolean
+    statusMessage: string
 }
 
 interface Props {
@@ -26,29 +28,47 @@ class Groups extends React.Component<Props, State> {
         super(props);
 
         // Load groups associated with logged in user
-        this.state = {
-            usersGroups: [
-                {groupName: "Group Name 1", numberMembers: 0, owner: "Richard Appen", public: true, usersRole: "owner"},
-                {groupName: "Group Name 2", numberMembers: 1, owner: "rich Main", public: true, usersRole: "member"}
-            ],
-            creatingGroup: false,
-            joiningGroup: false
-        }
 
-        // Create hash for each group
-        this.state.usersGroups.forEach((group) => {
-            let currGroupMD5 = new Md5()
-            currGroupMD5.appendStr(group.groupName)
-            currGroupMD5.appendStr(group.owner)
-            const finalHash = currGroupMD5.end() as string
-            localStorage.setItem(finalHash, JSON.stringify(group))
-            group.hash = finalHash
-        })
+        this.state = {
+            usersGroups: [],
+            creatingGroup: false,
+            joiningGroup: false,
+            statusMessage: ""
+        }
+    }
+    componentDidMount() {
+        this.loadUsersGroup()
     }
 
+    loadUsersGroup = async () => {
+        this.setState({statusMessage: "Loading..."})
+
+        const user = UserPool.getCurrentUser()
+        if (user) {
+            user.getSession(async () => {
+                let username = user.getUsername()
+                await axios.get(
+                    "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/",
+                    {params: {username: username}})
+                    .then( (response) => {
+                        this.setState({statusMessage: ""})
+                        // Set Groups
+                        this.setState({usersGroups: response.data})
+                        // Create hash for each group
+                        this.state.usersGroups.forEach((group) => {
+                            if (group.groupHash) {
+                                localStorage.setItem(group.groupHash, JSON.stringify(group))
+                            }
+                        })
+                    }).catch((error) => {
+                        this.setState({statusMessage: JSON.stringify(error)})
+                    })
+            })
+        }
+    }
 
     goToTicketGroup = (group: Group) => {
-        window.location.href = `/Groups/${group.hash}`
+        window.location.href = `/Groups/${group.groupHash}`
     }
 
     goToCreateGroup = () => {
@@ -77,6 +97,7 @@ class Groups extends React.Component<Props, State> {
                         <button className="toolbar-buttons" onClick={this.goToJoinGroup}>Join a Group</button>
                     </div>
                     <h1 className="group-title"> My Groups </h1>
+                        <div className={"status-message"}>{this.state.statusMessage}</div>
                     {this.state.usersGroups.map(group =>
                         <button className="group-container" onClick={() => this.goToTicketGroup(group)}>
                             <div className="group-name">{group.groupName}</div>
@@ -97,7 +118,7 @@ class Groups extends React.Component<Props, State> {
                         </button>
                     )}
                     </div>}
-                    {(UserPool.getCurrentUser()) && this.state.creatingGroup && <CreateGroup addGroup={this.addGroup}></CreateGroup> }
+                    {(UserPool.getCurrentUser()) && this.state.creatingGroup && <CreateGroup addGroup={this.addGroup} usersGroups={this.state.usersGroups}></CreateGroup> }
                     {(UserPool.getCurrentUser()) && this.state.joiningGroup && <JoinGroup addGroup={this.addGroup}></JoinGroup>}
                 </div>
         )
