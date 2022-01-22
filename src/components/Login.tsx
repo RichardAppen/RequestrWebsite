@@ -56,7 +56,7 @@ class Login extends React.Component<Props, State> {
         userLogin.authenticateUser(authenticationDetails, {
             onSuccess: (result) => {
                 console.log("Logged in: ", result)
-                window.location.href = '/'
+                window.location.href = '/Groups'
                 this.setState({loading: false})
             },
             onFailure: (error) => {

@@ -9,6 +9,8 @@ import {UserInfo} from "../utils/UserInfo";
 import {PasswordRequirements} from "../utils/PasswordRequirements";
 import {Group} from "../utils/Group";
 import {Md5} from "ts-md5";
+import axios from "axios";
+import {Member} from "../utils/Member";
 
 interface State {
     hash: string
@@ -16,7 +18,7 @@ interface State {
 }
 
 interface Props {
-    addGroup: (group: Group) => void;
+    username: string;
 }
 
 class JoinGroup extends React.Component<Props, State> {
@@ -30,36 +32,64 @@ class JoinGroup extends React.Component<Props, State> {
     }
 
     hashChanged = (event: ChangeEvent<HTMLInputElement>) => {
-
+        this.setState({hash: event.target.value})
     }
 
-    joinGroupPressed = () => {
+    postNewGroupEntry = async (group: Group) => {
+        await axios.post(
+            "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addUpdateGroupEntry",
+            {
+                "username" : group.username,
+                "groupName" : group.groupName,
+                "groupHash" : group.groupHash,
+                "owner" : group.owner,
+                "usersRole" : group.usersRole,
+                "public" : group.public
+            },
+            {
 
-        // make sure group hash exist by checking for entry in dynamoDB with the hash and some owner
+            }
+        ).then((response) => {
+            this.setState({statusMessage: "Success! You have joined the group " + group.groupName})
+            window.location.href = "/Groups"
+        }).catch((error) => {
+            console.log(error)
+            this.setState({statusMessage: "Network error: " + error})
+        })
+    }
 
-        // if the group exists return groupName, owner, public and create an entry in the table for this user and the hash
+    joinGroupPressed = async () => {
+        this.setState({statusMessage: "Loading..."})
+        await axios.get(
+            "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByHash",
+            {params: {groupHash: this.state.hash}})
+            .then( (response) => {
+                console.log("returned from GET hash method")
+                if (response.data.Count !== 0) {
+                    console.log("successfully found the group")
+                    //add Group
+                    let groupInfoSource : Group = response.data.Items[0]
 
-        if (false) {
-            this.setState({statusMessage: "This group does not exists, check the hash you entered."})
-        }
+                    // Create group object
+                    const finalGroupToAdd: Group = {
+                        username: this.props.username,
+                        groupName: groupInfoSource.groupName,
+                        owner: groupInfoSource.owner,
+                        usersRole: "Member",
+                        numberMembers: groupInfoSource.numberMembers++,
+                        public: groupInfoSource.public,
+                        groupHash: groupInfoSource.groupHash
+                    }
 
-        // Create group object
-        const finalGroupToAdd: Group = {
-            groupName: "Placeholder",
-            owner: "Placeholder",
-            usersRole: "Member",
-            numberMembers: 0,
-            public: false //placeholder
-        }
+                    this.postNewGroupEntry(finalGroupToAdd)
 
-        // get number of members from dynamo, then update number of members
-        finalGroupToAdd.numberMembers = 1
-
-        this.setState({statusMessage: "Success! You have joined the group " + "Placeholder"})
-
-        // add the group to the local groups array
-        this.props.addGroup(finalGroupToAdd)
-
+                } else {
+                    console.log("could not find the group")
+                    this.setState({statusMessage: "This group does not exists, check the hash you entered."})
+                }
+            }).catch((error) => {
+                this.setState({statusMessage: JSON.stringify(error)})
+            })
     }
 
 

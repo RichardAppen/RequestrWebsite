@@ -87,6 +87,7 @@ class CreateGroup extends React.Component<Props, State> {
                 let username = user.getUsername()
 
                 const finalGroupToAdd: Group = {
+                    username: username,
                     groupName: this.state.groupName,
                     owner: username,
                     usersRole: "Owner",
@@ -102,7 +103,7 @@ class CreateGroup extends React.Component<Props, State> {
                 finalGroupToAdd.groupHash = finalHash
 
                 await axios.post(
-                    "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addGroupEntry",
+                    "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addUpdateGroupEntry",
                     {
                         "username" : username,
                         "groupName" : finalGroupToAdd.groupName,

@@ -65,3 +65,62 @@
     scroll-behavior: smooth;
     overflow: scroll;
 }
+
+.member-row {
+    display: inline-flex;
+    text-align: center;
+}
+
+.member-username-header {
+    border-top: black 2px solid;
+    border-right: black 2px solid;
+    border-bottom: black 2px solid;
+    width: 9vw;
+    padding: 5px 0px 5px;
+    font-weight: bolder;
+}
+
+.member-role-header {
+    border-top: black 2px solid;
+    border-left: black 2px solid;
+    border-bottom: black 2px solid;
+    width: 9vw;
+    padding: 5px 0px 5px;
+    font-weight: bolder;
+}
+
+.member-role-header {
+    border-top: black 2px solid;
+    border-left: black 2px solid;
+    border-bottom: black 2px solid;
+    width: 9vw;
+    padding: 5px 0px 5px;
+    font-weight: bolder;
+}
+
+.member-username-entry {
+    width: 9vw;
+    padding: 5px 0px 5px;
+    border-right: black 1px solid;
+}
+
+.member-role-entry {
+    width: 9vw;
+    padding: 5px 0px 5px;
+    border-left: black 1px solid;
+}
+
+.member-promote-container {
+    display: inline-flex;
+    text-align: center;
+}
+
+.member-promote-button {
+    background: #9d1c00;
+    font-size: small;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}

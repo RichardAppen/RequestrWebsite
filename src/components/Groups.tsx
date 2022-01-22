@@ -11,13 +11,15 @@ import {Md5} from "ts-md5";
 import CreateGroup from "./CreateGroup";
 import {Ticket} from "../utils/Ticket";
 import JoinGroup from "./JoinGroup";
-import axios from "axios";
+import axios, {AxiosResponse} from "axios";
+import {Member} from "../utils/Member";
 
 interface State {
     usersGroups: Group[],
     creatingGroup: boolean,
     joiningGroup: boolean
-    statusMessage: string
+    statusMessage: string,
+    username: string
 }
 
 interface Props {
@@ -27,13 +29,12 @@ class Groups extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        // Load groups associated with logged in user
-
         this.state = {
             usersGroups: [],
             creatingGroup: false,
             joiningGroup: false,
-            statusMessage: ""
+            statusMessage: "",
+            username: ""
         }
     }
     componentDidMount() {
@@ -47,24 +48,55 @@ class Groups extends React.Component<Props, State> {
         if (user) {
             user.getSession(async () => {
                 let username = user.getUsername()
+                this.setState({username: username})
                 await axios.get(
-                    "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/",
+                    "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByUsername",
                     {params: {username: username}})
                     .then( (response) => {
-                        this.setState({statusMessage: ""})
-                        // Set Groups
-                        this.setState({usersGroups: response.data})
-                        // Create hash for each group
-                        this.state.usersGroups.forEach((group) => {
-                            if (group.groupHash) {
-                                localStorage.setItem(group.groupHash, JSON.stringify(group))
-                            }
+                        //Get Group Members and set the users groups
+                        this.getGroupMembers(response.data).then((results) => {
+                            // Create hash for each group
+                            results.forEach((group: Group) => {
+                                if (group.groupHash) {
+                                    localStorage.setItem(group.groupHash, JSON.stringify(group))
+                                }
+                            })
+                            this.setState({statusMessage: "", usersGroups: results})
                         })
                     }).catch((error) => {
                         this.setState({statusMessage: JSON.stringify(error)})
                     })
             })
         }
+    }
+
+    getGroupMembers = (groups: Group[]) => {
+        let groupPromises: Promise<Group>[] = []
+        groups.forEach((group) => {
+            groupPromises.push(axios.get(
+                "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByHash",
+                {params: {groupHash: group.groupHash}})
+                .then( (response) => {
+                    const finalMembers: Member[] = []
+                    response.data.Items.forEach((groupEntryFromHash : Group) => {
+                        const groupMember = {username: groupEntryFromHash.username, usersRole: groupEntryFromHash.usersRole }
+                        finalMembers.push(groupMember)
+                    })
+                    group.members = finalMembers
+                    group.numberMembers = response.data.Count
+                    return new Promise<Group>((resolve) => {
+                        resolve(group)
+                    })
+                }).catch((error) => {
+                    this.setState({statusMessage: JSON.stringify(error)})
+                    return new Promise<Group>((resolve, reject) => {
+                        reject()
+                    })
+                })
+            )
+        })
+
+        return Promise.all(groupPromises)
     }
 
     goToTicketGroup = (group: Group) => {
@@ -119,7 +151,7 @@ class Groups extends React.Component<Props, State> {
                     )}
                     </div>}
                     {(UserPool.getCurrentUser()) && this.state.creatingGroup && <CreateGroup addGroup={this.addGroup} usersGroups={this.state.usersGroups}></CreateGroup> }
-                    {(UserPool.getCurrentUser()) && this.state.joiningGroup && <JoinGroup addGroup={this.addGroup}></JoinGroup>}
+                    {(UserPool.getCurrentUser()) && this.state.joiningGroup && <JoinGroup username={this.state.username}></JoinGroup>}
                 </div>
         )
     }

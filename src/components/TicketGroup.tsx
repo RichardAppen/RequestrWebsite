@@ -11,12 +11,16 @@ import './Groups.css'
 import Table from "./Table";
 import {Ticket} from "../utils/Ticket";
 import NewTicket from "./NewTicket";
+import axios from "axios";
+import {Member} from "../utils/Member";
 
 interface State {
     group: Group
     tickets: Ticket[]
     renderNewTicketWindow: boolean
-    hashGiven: boolean
+    hashGiven: boolean,
+    memberUpdateLoading: boolean,
+    memberStatusMessage: string
 }
 
 interface Props {
@@ -39,20 +43,40 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                 {ticketId: '5555', requestor: 'rich', subject: '5th', date: '1/09/21', status: 'Pending', description: '', comments: []}
             ],
             renderNewTicketWindow: false,
-            hashGiven: currentGroup ? true : false
-
+            hashGiven: currentGroup ? true : false,
+            memberUpdateLoading: false,
+            memberStatusMessage: ""
         }
     }
 
-    loadMemberList = () : boolean => {
-        //only load member list if logged in user is owner or admin
-        if (this.state.group.usersRole == 'member') {
+    componentDidMount() {
+        if (this.state.group) {
+            this.getGroupMembers(this.state.group)
+        }
+    }
+
+    renderChangeRoleButton = (targetUser: Member) : boolean => {
+        if (targetUser.username == this.state.group.username) {
             return false
         }
 
-        //once this is checked then load all members from DynamoDB
-
-        return true
+        switch (this.state.group.usersRole) {
+            case "Owner": {
+                return true
+                break
+            }
+            case "Admin": {
+                if (targetUser.usersRole === "Member") {
+                    return true
+                } else {
+                    return false
+                }
+                break
+            }
+            default: {
+                return false
+            }
+        }
     }
 
     addTicket = (ticket: Ticket) => {
@@ -68,6 +92,88 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     backButtonPressed = () => {
         this.setState({renderNewTicketWindow: false})
     }
+
+    changeUsersRole = async (username: string, currentRole: string) => {
+        this.setState({memberStatusMessage: "Loading...", memberUpdateLoading: true})
+        if (currentRole !== "Member") {
+            await axios.post(
+                "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addUpdateGroupEntry",
+                {
+                    "username" : username,
+                    "groupName" : this.state.group.groupName,
+                    "groupHash" : this.state.group.groupHash,
+                    "owner" : this.state.group.owner,
+                    "usersRole" : "Member",
+                    "public" : this.state.group.public
+                },
+                {
+
+                }
+            ).then((response) => {
+                this.state.group.members?.forEach((member) => {
+                    if (username === member.username) {
+                        member.usersRole = "Member"
+                    }
+                })
+                console.log(this.state.group.members)
+                localStorage.setItem(this.state.group.groupHash!, JSON.stringify(this.state.group!))
+                this.setState({memberStatusMessage: "", memberUpdateLoading: false})
+            }).catch((error) => {
+                console.log(error)
+                this.setState({memberStatusMessage: "Network error", memberUpdateLoading: false})
+            })
+        } else {
+            await axios.post(
+                "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addUpdateGroupEntry",
+                {
+                    "username" : username,
+                    "groupName" : this.state.group.groupName,
+                    "groupHash" : this.state.group.groupHash,
+                    "owner" : this.state.group.owner,
+                    "usersRole" : "Admin",
+                    "public" : this.state.group.public
+                },
+                {
+
+                }
+            ).then((response) => {
+                this.state.group.members?.forEach((member) => {
+                    if (username === member.username) {
+                        member.usersRole = "Admin"
+                    }
+                })
+                console.log(this.state.group.members)
+                this.setState({memberStatusMessage: "", memberUpdateLoading: false})
+                localStorage.setItem(this.state.group.groupHash!, JSON.stringify(this.state.group!))
+            }).catch((error) => {
+                console.log(error)
+                this.setState({memberStatusMessage: "Network error", memberUpdateLoading: false})
+            })
+        }
+    }
+
+
+    getGroupMembers = async (group: Group) => {
+        this.setState({memberStatusMessage: "Loading...", memberUpdateLoading: true})
+            await axios.get(
+                "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByHash",
+                {params: {groupHash: group.groupHash}})
+                .then( (response) => {
+                    const finalMembers: Member[] = []
+                    response.data.Items.forEach((groupEntryFromHash : Group) => {
+                        const groupMember = {username: groupEntryFromHash.username, usersRole: groupEntryFromHash.usersRole }
+                        finalMembers.push(groupMember)
+                    })
+                    group.members = finalMembers
+                    group.numberMembers = response.data.Count
+                    this.setState({group: group, memberStatusMessage: "", memberUpdateLoading: false})
+                    localStorage.setItem(group.groupHash!, JSON.stringify(group))
+                }).catch((error) => {
+                    this.setState({memberStatusMessage: JSON.stringify(error), memberUpdateLoading: false})
+                })
+        }
+
+
 
     render() {
         return(
@@ -115,9 +221,42 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                     <div className="group-info-entries">{this.state.group.numberMembers}</div>
                                 </div>
                             </div>
-                            {this.loadMemberList() && <div className='member-list'>
+                            <div className='member-list'>
                                 <h1> Member List: </h1>
-                            </div>}
+                                <div className="member-row">
+                                    <div className="member-username-header">
+                                        Username:
+                                    </div>
+                                    <div className="member-role-header">
+                                        Role:
+                                    </div>
+                                </div>
+                                {this.state.group.members && !this.state.memberUpdateLoading && this.state.group.members.map(memberRolePair =>
+                                    <div>
+                                        <div className="member-row">
+                                            <div className="member-username-entry">
+                                            {memberRolePair.username}
+                                            </div>
+                                            <div className="member-role-entry">
+                                                {memberRolePair.usersRole}
+                                            </div>
+                                        </div>
+                                        {this.renderChangeRoleButton(memberRolePair) &&
+                                            <div className="member-promote-container">
+                                                <div className="member-username-entry"></div>
+                                                <div className="member-role-entry">
+                                                    <button className='member-promote-button'
+                                                            onClick={() => this.changeUsersRole(memberRolePair.username, memberRolePair.usersRole)}>
+                                                        {memberRolePair.usersRole === "Member" ? "Promote" : "Demote"}
+                                                    </button>
+                                                </div>
+                                        </div>}
+                                    </div>
+                                )}
+                                <div className="status-message">
+                                    {this.state.memberStatusMessage}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>}
