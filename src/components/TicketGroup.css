@@ -123,4 +123,48 @@
     border: #9d1c00 1px;
     padding-top: 10px;
     padding-bottom: 10px;
+    margin-right: 5px;
+}
+
+.member-kick-button {
+    background: red;
+    font-size: small;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-left: 5px;
+}
+
+.unique-code {
+    border: 2px solid #9d1c00;
+    margin: 5px;
+    overflow-wrap: break-word;
+}
+
+.unique-code-text {
+    font-size: small;
+}
+
+.leave-button {
+    background: red;
+    font-size: x-large;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin: 10px;
+}
+
+.leave-button-small {
+    background: red;
+    font-size: small;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin: 10px;
 }

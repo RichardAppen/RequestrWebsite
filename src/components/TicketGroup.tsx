@@ -20,7 +20,11 @@ interface State {
     renderNewTicketWindow: boolean
     hashGiven: boolean,
     memberUpdateLoading: boolean,
-    memberStatusMessage: string
+    memberStatusMessage: string,
+    leavingGroup: boolean,
+    leavingStatusMessage: string,
+    leavingGroupLoading: boolean,
+    overallLoading: boolean
 }
 
 interface Props {
@@ -45,14 +49,48 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
             renderNewTicketWindow: false,
             hashGiven: currentGroup ? true : false,
             memberUpdateLoading: false,
-            memberStatusMessage: ""
+            memberStatusMessage: "",
+            leavingGroup: false,
+            leavingStatusMessage: "",
+            leavingGroupLoading: false,
+            overallLoading: false
         }
     }
 
     componentDidMount() {
+        this.setState({overallLoading: true})
         if (this.state.group) {
             this.getGroupMembers(this.state.group)
+
+            this.userIsActuallyPartOfGroup().then((result) => {
+                if (!result) {
+                    localStorage.removeItem(this.state.group.groupHash!)
+                    this.setState({hashGiven: false})
+                }
+                this.setState({overallLoading: false})
+            })
         }
+    }
+
+    userIsActuallyPartOfGroup = async () : Promise<boolean> => {
+        let isMember = false
+        await axios.get(
+            "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByUsername",
+            {params: {username: this.state.group.username}})
+            .then( (response) => {
+                response.data.forEach((group: Group) => {
+                    if (this.state.group.groupHash! === group.groupHash) {
+                        isMember = true
+                        return new Promise<boolean>((resolve, reject) => {
+                            resolve(isMember)
+                        })
+                    }
+                })
+            }).catch((error) => {
+            })
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(isMember)
+        })
     }
 
     renderChangeRoleButton = (targetUser: Member) : boolean => {
@@ -91,6 +129,48 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
     backButtonPressed = () => {
         this.setState({renderNewTicketWindow: false})
+    }
+
+    firstLeaveGroupButtonPressed = () => {
+        this.setState({leavingGroup: true})
+    }
+
+    leaveButtonConfirmPressed = () => {
+        this.setState({leavingStatusMessage: "Loading...", leavingGroupLoading: true})
+        axios.delete("https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/deleteEntryByHashAndUsername",
+            {
+                params: {
+                    groupHash: this.state.group.groupHash,
+                    username: this.state.group.username
+                }
+            }
+        ).then( (response) => {
+            this.setState({leavingStatusMessage: "", leavingGroupLoading: false})
+            window.location.href = "/Groups"
+            localStorage.removeItem(this.state.group.groupHash!)
+        }).catch((error) => {
+            this.setState({leavingStatusMessage: JSON.stringify(error), leavingGroupLoading: false})
+        })
+    }
+
+    leaveButtonDeniedPressed = () => {
+        this.setState({leavingGroup: false})
+    }
+
+    kickOutUser = (username: string) => {
+        this.setState({memberStatusMessage: "Loading...", memberUpdateLoading: true})
+        axios.delete("https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/deleteEntryByHashAndUsername",
+            {
+                params: {
+                    groupHash: this.state.group.groupHash,
+                    username: username
+                }
+            }
+        ).then( (response) => {
+            this.getGroupMembers(this.state.group)
+        }).catch((error) => {
+            this.setState({leavingStatusMessage: JSON.stringify(error), leavingGroupLoading: false})
+        })
     }
 
     changeUsersRole = async (username: string, currentRole: string) => {
@@ -178,14 +258,16 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     render() {
         return(
             <div>
-
+                {(this.state.overallLoading) && <div className="status-message">
+                    Loading...
+                </div>}
                 {(!this.state.hashGiven) && <div className="status-message">
-                    This group link does not exists
+                    This group link does not exists or you don't have access to this group
                 </div>}
                 {(!UserPool.getCurrentUser()) && <div className={"please-login"}>
                     Please Login to access this page
                 </div>}
-                {(UserPool.getCurrentUser()) && (this.state.hashGiven) && <div>
+                {(UserPool.getCurrentUser()) && (this.state.hashGiven) && (!this.state.overallLoading) && <div>
                     <h1 className='group-title'> Ticket Group: {this.state.group.groupName} </h1>
                     <div className='ticket-side'>
                         <div className='display-block'>
@@ -220,6 +302,9 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                     <div className="group-info-headers">Number of Members:</div>
                                     <div className="group-info-entries">{this.state.group.numberMembers}</div>
                                 </div>
+                                <h2> Unique Code: </h2>
+                                <div className="unique-code"> {this.state.group.groupHash}</div>
+                                <div className="unique-code-text"> Share this unique code with others that want to join this group! </div>
                             </div>
                             <div className='member-list'>
                                 <h1> Member List: </h1>
@@ -249,6 +334,10 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                                             onClick={() => this.changeUsersRole(memberRolePair.username, memberRolePair.usersRole)}>
                                                         {memberRolePair.usersRole === "Member" ? "Promote" : "Demote"}
                                                     </button>
+                                                    <button className='member-kick-button'
+                                                            onClick={() => this.kickOutUser(memberRolePair.username)}>
+                                                        Kick Out
+                                                    </button>
                                                 </div>
                                         </div>}
                                     </div>
@@ -257,6 +346,15 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                     {this.state.memberStatusMessage}
                                 </div>
                             </div>
+                            {this.state.group.usersRole != "Owner" && <div className="member-list">
+                                {this.state.leavingGroupLoading && <div className="status-message"> {this.state.leavingStatusMessage} </div>}
+                                {!this.state.leavingGroup && !this.state.leavingGroupLoading && <button className="leave-button" onClick={this.firstLeaveGroupButtonPressed}> Leave Group </button>}
+                                {this.state.leavingGroup && !this.state.leavingGroupLoading && <div>
+                                    <div> Are you sure you want to leave this group? </div>
+                                    <button className="leave-button-small" onClick={this.leaveButtonConfirmPressed}> Yes </button>
+                                    <button className="leave-button-small" onClick={this.leaveButtonDeniedPressed}> No  </button>
+                                </div>}
+                            </div>}
                         </div>
                     </div>
                 </div>}
