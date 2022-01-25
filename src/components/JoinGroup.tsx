@@ -11,6 +11,7 @@ import {Group} from "../utils/Group";
 import {Md5} from "ts-md5";
 import axios from "axios";
 import {Member} from "../utils/Member";
+import {requestrGroupsAPI} from "../api/requestrGroupsAPI";
 
 interface State {
     hash: string
@@ -36,20 +37,14 @@ class JoinGroup extends React.Component<Props, State> {
     }
 
     postNewGroupEntry = async (group: Group) => {
-        await axios.post(
-            "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addUpdateGroupEntry",
-            {
-                "username" : group.username,
-                "groupName" : group.groupName,
-                "groupHash" : group.groupHash,
-                "owner" : group.owner,
-                "usersRole" : group.usersRole,
-                "public" : group.public
-            },
-            {
-
-            }
-        ).then((response) => {
+        await requestrGroupsAPI.addUpdateGroupEntry({
+            "username" : group.username,
+            "groupName" : group.groupName,
+            "groupHash" : group.groupHash,
+            "owner" : group.owner,
+            "usersRole" : group.usersRole,
+            "public" : group.public
+        }).then((response) => {
             this.setState({statusMessage: "Success! You have joined the group " + group.groupName})
             window.location.href = "/Groups"
         }).catch((error) => {
@@ -60,9 +55,7 @@ class JoinGroup extends React.Component<Props, State> {
 
     joinGroupPressed = async () => {
         this.setState({statusMessage: "Loading..."})
-        await axios.get(
-            "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByHash",
-            {params: {groupHash: this.state.hash}})
+        await requestrGroupsAPI.getEntriesByHash(this.state.hash)
             .then( (response) => {
                 console.log("returned from GET hash method")
                 if (response.data.Count !== 0) {

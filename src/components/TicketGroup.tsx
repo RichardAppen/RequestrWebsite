@@ -13,6 +13,7 @@ import {Ticket} from "../utils/Ticket";
 import NewTicket from "./NewTicket";
 import axios from "axios";
 import {Member} from "../utils/Member";
+import {requestrGroupsAPI} from "../api/requestrGroupsAPI";
 
 interface State {
     group: Group
@@ -63,33 +64,35 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
             this.getGroupMembers(this.state.group)
 
             this.userIsActuallyPartOfGroup().then((result) => {
-                if (!result) {
-                    localStorage.removeItem(this.state.group.groupHash!)
+                localStorage.removeItem(this.state.group.groupHash!)
+                if (!result[0]) {
                     this.setState({hashGiven: false})
+                } else {
+                    this.state.group.usersRole = result[1]
+                    localStorage.setItem(this.state.group.groupHash!, JSON.stringify(this.state.group))
                 }
                 this.setState({overallLoading: false})
             })
+        } else {
+            this.setState({overallLoading: false})
         }
     }
 
-    userIsActuallyPartOfGroup = async () : Promise<boolean> => {
+    userIsActuallyPartOfGroup = async () : Promise<[boolean, string]> => {
         let isMember = false
-        await axios.get(
-            "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByUsername",
-            {params: {username: this.state.group.username}})
+        let userRole = "Non-Member"
+        await requestrGroupsAPI.getEntriesByUsername(this.state.group.username)
             .then( (response) => {
                 response.data.forEach((group: Group) => {
                     if (this.state.group.groupHash! === group.groupHash) {
                         isMember = true
-                        return new Promise<boolean>((resolve, reject) => {
-                            resolve(isMember)
-                        })
+                        userRole = group.usersRole
                     }
                 })
             }).catch((error) => {
             })
-        return new Promise<boolean>((resolve, reject) => {
-            resolve(isMember)
+        return new Promise<[boolean, string]>((resolve, reject) => {
+            resolve([isMember, userRole])
         })
     }
 
@@ -137,14 +140,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
     leaveButtonConfirmPressed = () => {
         this.setState({leavingStatusMessage: "Loading...", leavingGroupLoading: true})
-        axios.delete("https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/deleteEntryByHashAndUsername",
-            {
-                params: {
-                    groupHash: this.state.group.groupHash,
-                    username: this.state.group.username
-                }
-            }
-        ).then( (response) => {
+        requestrGroupsAPI.deleteEntryByHashAndUsername(this.state.group.groupHash!, this.state.group.username)
+            .then( (response) => {
             this.setState({leavingStatusMessage: "", leavingGroupLoading: false})
             window.location.href = "/Groups"
             localStorage.removeItem(this.state.group.groupHash!)
@@ -159,14 +156,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
     kickOutUser = (username: string) => {
         this.setState({memberStatusMessage: "Loading...", memberUpdateLoading: true})
-        axios.delete("https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/deleteEntryByHashAndUsername",
-            {
-                params: {
-                    groupHash: this.state.group.groupHash,
-                    username: username
-                }
-            }
-        ).then( (response) => {
+        requestrGroupsAPI.deleteEntryByHashAndUsername(this.state.group.groupHash!, username)
+            .then( (response) => {
             this.getGroupMembers(this.state.group)
         }).catch((error) => {
             this.setState({leavingStatusMessage: JSON.stringify(error), leavingGroupLoading: false})
@@ -176,20 +167,14 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     changeUsersRole = async (username: string, currentRole: string) => {
         this.setState({memberStatusMessage: "Loading...", memberUpdateLoading: true})
         if (currentRole !== "Member") {
-            await axios.post(
-                "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addUpdateGroupEntry",
-                {
-                    "username" : username,
-                    "groupName" : this.state.group.groupName,
-                    "groupHash" : this.state.group.groupHash,
-                    "owner" : this.state.group.owner,
-                    "usersRole" : "Member",
-                    "public" : this.state.group.public
-                },
-                {
-
-                }
-            ).then((response) => {
+            await requestrGroupsAPI.addUpdateGroupEntry({
+                "username" : username,
+                "groupName" : this.state.group.groupName,
+                "groupHash" : this.state.group.groupHash,
+                "owner" : this.state.group.owner,
+                "usersRole" : "Member",
+                "public" : this.state.group.public
+            }).then((response) => {
                 this.state.group.members?.forEach((member) => {
                     if (username === member.username) {
                         member.usersRole = "Member"
@@ -203,20 +188,14 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                 this.setState({memberStatusMessage: "Network error", memberUpdateLoading: false})
             })
         } else {
-            await axios.post(
-                "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addUpdateGroupEntry",
-                {
-                    "username" : username,
-                    "groupName" : this.state.group.groupName,
-                    "groupHash" : this.state.group.groupHash,
-                    "owner" : this.state.group.owner,
-                    "usersRole" : "Admin",
-                    "public" : this.state.group.public
-                },
-                {
-
-                }
-            ).then((response) => {
+            await requestrGroupsAPI.addUpdateGroupEntry({
+                "username" : username,
+                "groupName" : this.state.group.groupName,
+                "groupHash" : this.state.group.groupHash,
+                "owner" : this.state.group.owner,
+                "usersRole" : "Admin",
+                "public" : this.state.group.public
+            }).then((response) => {
                 this.state.group.members?.forEach((member) => {
                     if (username === member.username) {
                         member.usersRole = "Admin"
@@ -235,10 +214,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
     getGroupMembers = async (group: Group) => {
         this.setState({memberStatusMessage: "Loading...", memberUpdateLoading: true})
-            await axios.get(
-                "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByHash",
-                {params: {groupHash: group.groupHash}})
-                .then( (response) => {
+        await requestrGroupsAPI.getEntriesByHash(group.groupHash!)
+            .then( (response) => {
                     const finalMembers: Member[] = []
                     response.data.Items.forEach((groupEntryFromHash : Group) => {
                         const groupMember = {username: groupEntryFromHash.username, usersRole: groupEntryFromHash.usersRole }

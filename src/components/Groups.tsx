@@ -13,6 +13,7 @@ import {Ticket} from "../utils/Ticket";
 import JoinGroup from "./JoinGroup";
 import axios, {AxiosResponse} from "axios";
 import {Member} from "../utils/Member";
+import {requestrGroupsAPI} from "../api/requestrGroupsAPI";
 
 interface State {
     usersGroups: Group[],
@@ -49,9 +50,7 @@ class Groups extends React.Component<Props, State> {
             user.getSession(async () => {
                 let username = user.getUsername()
                 this.setState({username: username})
-                await axios.get(
-                    "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByUsername",
-                    {params: {username: username}})
+                await requestrGroupsAPI.getEntriesByUsername(username)
                     .then( (response) => {
                         //Get Group Members and set the users groups
                         this.getGroupMembers(response.data).then((results) => {
@@ -73,9 +72,7 @@ class Groups extends React.Component<Props, State> {
     getGroupMembers = (groups: Group[]) => {
         let groupPromises: Promise<Group>[] = []
         groups.forEach((group) => {
-            groupPromises.push(axios.get(
-                "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/getEntriesByHash",
-                {params: {groupHash: group.groupHash}})
+            groupPromises.push(requestrGroupsAPI.getEntriesByHash(group.groupHash!)
                 .then( (response) => {
                     const finalMembers: Member[] = []
                     response.data.Items.forEach((groupEntryFromHash : Group) => {

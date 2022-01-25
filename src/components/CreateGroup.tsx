@@ -9,7 +9,7 @@ import {UserInfo} from "../utils/UserInfo";
 import {PasswordRequirements} from "../utils/PasswordRequirements";
 import {Group} from "../utils/Group";
 import {Md5} from "ts-md5";
-import axios from "axios";
+import {requestrGroupsAPI} from "../api/requestrGroupsAPI";
 
 interface State {
     groupName: string,
@@ -99,30 +99,23 @@ class CreateGroup extends React.Component<Props, State> {
                 currGroupMD5.appendStr(finalGroupToAdd.groupName)
                 currGroupMD5.appendStr(finalGroupToAdd.owner)
                 const finalHash = currGroupMD5.end() as string
-                localStorage.setItem(finalHash, JSON.stringify(finalGroupToAdd))
                 finalGroupToAdd.groupHash = finalHash
+                localStorage.setItem(finalHash, JSON.stringify(finalGroupToAdd))
 
-                await axios.post(
-                    "https://d136pqz23a.execute-api.us-east-1.amazonaws.com/prod/addUpdateGroupEntry",
-                    {
-                        "username" : username,
-                        "groupName" : finalGroupToAdd.groupName,
-                        "groupHash" : finalGroupToAdd.groupHash,
-                        "owner" : username,
-                        "usersRole" : "Owner",
-                        "public" : finalGroupToAdd.public
-                    },
-                    {
-
-                    }
-                ).then((response) => {
+                await requestrGroupsAPI.addUpdateGroupEntry({
+                    "username" : username,
+                    "groupName" : finalGroupToAdd.groupName,
+                    "groupHash" : finalGroupToAdd.groupHash,
+                    "owner" : username,
+                    "usersRole" : "Owner",
+                    "public" : finalGroupToAdd.public
+                }).then((response) => {
                     this.setState({statusMessage: "Successfully created group! " + response.data})
+                    this.props.addGroup(finalGroupToAdd)
                 }).catch((error) => {
                     console.log(error)
                     this.setState({statusMessage: "Network error"})
                 })
-
-                this.props.addGroup(finalGroupToAdd)
             })
         }
     }
