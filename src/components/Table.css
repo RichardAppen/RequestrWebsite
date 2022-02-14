@@ -5,10 +5,31 @@
     width: 60vw;
 }
 
-.regular-row {
+.regular-row-pending {
     display: inline-flex;
     text-align: center;
     width: 60vw;
+}
+
+.regular-row-approved {
+    display: inline-flex;
+    text-align: center;
+    width: 60vw;
+    background-color: lightgreen;
+}
+
+.regular-row-denied {
+    display: inline-flex;
+    text-align: center;
+    width: 60vw;
+    background-color: #ed2f2f;
+}
+
+.regular-row-archived {
+    display: inline-flex;
+    text-align: center;
+    width: 60vw;
+    background-color: lightgrey;
 }
 
 .requestID-header {
@@ -99,7 +120,25 @@
     height: 0px;
 }
 
-.flex-header-grey {
+.flex-header-archived {
+    display: flex;
+    background: lightgrey;
+    position: relative;
+}
+
+.flex-header-approved {
+    display: flex;
+    background: lightgreen;
+    position: relative;
+}
+
+.flex-header-denied {
+    display: flex;
+    background: #ed2f2f;
+    position: relative;
+}
+
+.flex-header-pending {
     display: flex;
     background: lightgrey;
     position: relative;

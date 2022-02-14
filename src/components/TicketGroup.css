@@ -58,9 +58,23 @@
     margin: 10px auto;
 }
 
+.archived-tickets-button {
+    position: absolute;
+    left: 0;
+    background: #9d1c00;
+    font-size: small;
+    color: white;
+    border-radius: 100px;
+    border: #9d1c00 1px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    display: block;
+    margin: 10px auto;
+}
+
 .table {
     width: 60vw;
-    height: 60vh;
+    height: 70vh;
     border: solid #9d1c00 4px;
     scroll-behavior: smooth;
     overflow: scroll;

@@ -27,6 +27,8 @@ function App() {
               <Route path="/Settings" element={<Settings></Settings>}></Route>
               <Route path="/Groups" element={<Groups></Groups>}></Route>
               <Route path="/Groups/:hash" element={<TicketGroupWrapper></TicketGroupWrapper>}></Route>
+              <Route path="/Groups/:hash/:archived" element={<TicketGroupWrapper></TicketGroupWrapper>}></Route>
+              <Route path="/Groups/:hash/:archived/:ticketId" element={<TicketGroupWrapper></TicketGroupWrapper>}></Route>
           </Routes>
       </Router>
   );

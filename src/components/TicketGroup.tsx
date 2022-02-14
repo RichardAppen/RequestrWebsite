@@ -14,10 +14,13 @@ import NewTicket from "./NewTicket";
 import axios from "axios";
 import {Member} from "../utils/Member";
 import {requestrGroupsAPI} from "../api/requestrGroupsAPI";
+import {requestrTicketsAPI} from "../api/requestrTicketsAPI";
+import {Execution} from "../utils/Execution";
 
 interface State {
     group: Group
     tickets: Ticket[]
+    archivedTickets: Ticket[]
     renderNewTicketWindow: boolean
     hashGiven: boolean,
     memberUpdateLoading: boolean,
@@ -25,11 +28,18 @@ interface State {
     leavingGroup: boolean,
     leavingStatusMessage: string,
     leavingGroupLoading: boolean,
-    overallLoading: boolean
+    overallLoading: boolean,
+    tableStatusMessage: string,
+    archiveStatusMessage: string,
+    viewingArchive: boolean,
+    ticketFromUrl?: Ticket,
+    belowTableStatusMessage: string
 }
 
 interface Props {
     hash: string
+    archived: string
+    ticketId?: string
 }
 
 class TicketGroup extends React.Component<Props & RouteProps, State> {
@@ -40,13 +50,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
         this.state = {
             group: currentGroup ? JSON.parse(currentGroup) : null,
-            tickets: [
-                {ticketId: '1111', requestor: 'rich', subject: '1st', date: '1/09/21', status: 'Pending', description: 'This is a long description about which we can test the individual ticket view and see how it handles wrapped around text and what it may do with it', comments: [["rappen", "Hello", "1/09/12 12:41"], ["rappen", "Hello", "1/09/21 12:40"]]},
-                {ticketId: '2222', requestor: 'rich', subject: '2nd', date: '1/09/21', status: 'Pending', description: '', comments: []},
-                {ticketId: '3333', requestor: 'rich', subject: '3rd', date: '1/09/21', status: 'Pending', description: '', comments: []},
-                {ticketId: '4444', requestor: 'rich', subject: '4th', date: '1/09/21', status: 'Pending', description: '', comments: []},
-                {ticketId: '5555', requestor: 'rich', subject: '5th', date: '1/09/21', status: 'Pending', description: '', comments: []}
-            ],
+            tickets: [],
+            archivedTickets: [],
             renderNewTicketWindow: false,
             hashGiven: currentGroup ? true : false,
             memberUpdateLoading: false,
@@ -54,8 +59,16 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
             leavingGroup: false,
             leavingStatusMessage: "",
             leavingGroupLoading: false,
-            overallLoading: false
+            overallLoading: false,
+            tableStatusMessage: "",
+            archiveStatusMessage: "",
+            viewingArchive: false,
+            belowTableStatusMessage: ""
         }
+    }
+
+    setBelowTableStatusMessageToEmpty = () => {
+        this.setState({belowTableStatusMessage: ""})
     }
 
     componentDidMount() {
@@ -72,10 +85,69 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                     localStorage.setItem(this.state.group.groupHash!, JSON.stringify(this.state.group))
                 }
                 this.setState({overallLoading: false})
+                this.loadGroupsTickets()
             })
         } else {
             this.setState({overallLoading: false})
         }
+    }
+
+    loadGroupsTickets = async () => {
+        if (this.props.archived === "archived") {
+            this.setState({viewingArchive: true})
+        } else if (this.props.archived == 'active') {
+            this.setState({viewingArchive: false})
+        } else {
+            this.setState({belowTableStatusMessage: "Bad URL, specify only \"/active\" or \"/archived\" (By default url was changed to \"/active\")"})
+            window.history.replaceState(null, "", `/Groups/${this.state.group.groupHash}/active`)
+        }
+        this.setState({tableStatusMessage: "Loading...", archiveStatusMessage: "Loading..."})
+
+        requestrTicketsAPI.getTicketExecutionsByStateMachineARN(this.state.group.stateMachineARN!, 'SUCCEEDED').then((response) => {
+            this.setState({archivedTickets: response.data, archiveStatusMessage: ""})
+            if (this.props.ticketId && this.props.archived === 'archived') {
+                let found: boolean = false
+                this.state.archivedTickets.forEach((ticket) => {
+                    if (ticket.ticketData.ticketId === this.props.ticketId) {
+                        found = true
+                        this.setState({ticketFromUrl: ticket})
+                        return
+                    }
+                })
+                if (!found) {
+                    this.setState({belowTableStatusMessage: "The specific ticket ID you are trying to access does not exists in this group"})
+                }
+            }
+        }).catch((error) => {
+            console.log("error in loading archived tickets: " + error)
+            this.setState({archiveStatusMessage: "Error: " + error})
+        })
+
+        await requestrTicketsAPI.getTicketExecutionsByStateMachineARN(this.state.group.stateMachineARN!, 'RUNNING').then((response) => {
+            console.log(response)
+            let groupsTickets: Ticket[] = []
+            response.data.forEach((execution: Execution) => {
+                let currentTicket: Ticket = execution.request
+                currentTicket.token = execution.token
+                groupsTickets.push(currentTicket)
+            })
+            this.setState({tickets: groupsTickets, tableStatusMessage: ""})
+            if (this.props.ticketId && this.props.archived === 'active') {
+                let found : boolean = false
+                this.state.tickets.forEach((ticket) => {
+                    if (ticket.ticketData.ticketId === this.props.ticketId) {
+                        found = true
+                        this.setState({ticketFromUrl: ticket})
+                        return
+                    }
+                })
+                if (!found) {
+                    this.setState({belowTableStatusMessage: "The specific ticket ID you are trying to access does not exists in this group or it is not active. Perhaps it was archived?"})
+                }
+            }
+        }).catch((error) => {
+            this.setState({tableStatusMessage: JSON.stringify(error)})
+        })
     }
 
     userIsActuallyPartOfGroup = async () : Promise<[boolean, string]> => {
@@ -120,18 +192,17 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
         }
     }
 
-    addTicket = (ticket: Ticket) => {
-        const currTickets = this.state.tickets
-        currTickets.push(ticket)
-        this.setState({tickets: currTickets, renderNewTicketWindow: false})
+    addTicket = () => {
+        this.setState({renderNewTicketWindow: false})
+        this.loadGroupsTickets()
     }
 
     handleNewTicketPressed = () => {
-        this.setState({renderNewTicketWindow: true})
+        this.setState({renderNewTicketWindow: true, belowTableStatusMessage: ""})
     }
 
     backButtonPressed = () => {
-        this.setState({renderNewTicketWindow: false})
+        this.setState({renderNewTicketWindow: false, belowTableStatusMessage: ""})
     }
 
     firstLeaveGroupButtonPressed = () => {
@@ -211,6 +282,15 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
         }
     }
 
+    handleArchiveButtonPressed = () => {
+        this.setState({viewingArchive: !this.state.viewingArchive, belowTableStatusMessage: ""})
+        if (!this.state.viewingArchive) {
+            window.history.replaceState(null, '', `/Groups/${this.props.hash}/archived`)
+        } else {
+            window.history.replaceState(null, '', `/Groups/${this.props.hash}/active`)
+        }
+    }
+
 
     getGroupMembers = async (group: Group) => {
         this.setState({memberStatusMessage: "Loading...", memberUpdateLoading: true})
@@ -248,8 +328,9 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                     <h1 className='group-title'> Ticket Group: {this.state.group.groupName} </h1>
                     <div className='ticket-side'>
                         <div className='display-block'>
+                            <button className='archived-tickets-button' onClick={this.handleArchiveButtonPressed}>{this.state.viewingArchive ? 'Active Tickets' : 'Archived Tickets'}</button>
                             <button className='new-ticket-button' onClick={this.handleNewTicketPressed}> New Ticket </button>
-                            <h1 className='ticket-title'> Tickets </h1>
+                            <h1 className='ticket-title'> {this.state.viewingArchive ? 'Archived Tickets' : 'Tickets'} </h1>
                             <div className='table'>
                                 {this.state.renderNewTicketWindow ?
                                     <div>
@@ -258,10 +339,40 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                             <div className='ticket-selected-id'>New Ticket</div>
                                         </div>
                                         <div className='ticket-selected-div'></div>
-                                        <NewTicket addTicket={this.addTicket}></NewTicket>
+                                        <NewTicket addTicket={this.addTicket} stateMachineARN={this.state.group.stateMachineARN!}></NewTicket>
                                     </div>
                                     :
-                                    <Table tickets={this.state.tickets}></Table> }
+                                    <div>
+                                        {(this.state.viewingArchive) &&
+                                            <div>
+                                                <Table
+                                                    tickets={this.state.archivedTickets}
+                                                    group={this.state.group} archived={true}
+                                                    ticketFromURL={this.state.ticketFromUrl}
+                                                    setBelowTableStatusMessageToEmpty={this.setBelowTableStatusMessageToEmpty}>
+                                                </Table>
+                                                <div className="status-message">
+                                                    {this.state.archiveStatusMessage}
+                                                </div>
+                                            </div>
+                                        }
+                                        {(!this.state.viewingArchive) &&
+                                            <div>
+                                                <Table
+                                                    tickets={this.state.tickets}
+                                                    group={this.state.group}
+                                                    archived={false}
+                                                    ticketFromURL={this.state.ticketFromUrl}
+                                                    setBelowTableStatusMessageToEmpty={this.setBelowTableStatusMessageToEmpty}>
+                                                </Table>
+                                                <div className="status-message">
+                                                    {this.state.tableStatusMessage}
+                                                </div>
+                                            </div>}
+                                    </div>}
+                            </div>
+                            <div className="status-message">
+                                {this.state.belowTableStatusMessage}
                             </div>
                         </div>
                     </div>

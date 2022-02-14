@@ -6,16 +6,19 @@ import './NewTicket.css'
 import IndividualTicket from "./IndividualTicket";
 import newTicket from "./NewTicket";
 import UserPool from "../UserPool";
+import {requestrTicketsAPI} from "../api/requestrTicketsAPI";
 
 interface State {
     newTicketSubject: string;
     newTicketDescription: string;
     requestor: string
     date: string
+    statusMessage: string
 }
 
 interface Props {
-    addTicket: (ticket: Ticket) => void;
+    addTicket: () => void;
+    stateMachineARN: string;
 }
 
 class NewTicket extends React.Component<Props, State> {
@@ -34,7 +37,8 @@ class NewTicket extends React.Component<Props, State> {
             newTicketDescription: "",
             newTicketSubject: "",
             requestor: username,
-            date: new Date().toLocaleString()
+            date: new Date().toLocaleString(),
+            statusMessage: ""
         }
 
         setInterval(this.updateTime, 1000)
@@ -49,8 +53,9 @@ class NewTicket extends React.Component<Props, State> {
         this.setState({newTicketDescription: event.target.value})
     }
 
-    createTicketPressed = () => {
+    createTicketPressed = async () => {
         if (this.state.newTicketDescription != "" && this.state.newTicketSubject != "") {
+            this.setState({statusMessage: "Loading..."})
             let newTicketMd5 = new Md5()
             newTicketMd5.appendStr(this.state.requestor)
             newTicketMd5.appendStr(this.state.newTicketSubject)
@@ -58,16 +63,25 @@ class NewTicket extends React.Component<Props, State> {
             const finalHash = newTicketMd5.end() as string
 
             const finalTicketToAdd: Ticket = {
-                ticketId: finalHash,
-                requestor: this.state.requestor,
-                subject: this.state.newTicketSubject,
-                date: new Date().toLocaleString(),
-                status: "Pending",
-                description: this.state.newTicketDescription,
+                ticketData: {
+                    ticketId: finalHash,
+                    requestor: this.state.requestor,
+                    subject: this.state.newTicketSubject,
+                    date: new Date().toLocaleString(),
+                    status: "Pending",
+                    description: this.state.newTicketDescription
+                },
                 comments: []
             }
 
-            this.props.addTicket(finalTicketToAdd)
+            await requestrTicketsAPI.createTicket(finalTicketToAdd.ticketData, this.props.stateMachineARN).then((response) => {
+                console.log(response)
+                this.setState({statusMessage: "Ticket created successfully!"})
+                this.props.addTicket()
+            }).catch((error) => {
+                console.log(error)
+                this.setState({statusMessage: "Error: " + error})
+            })
         }
     }
 
@@ -78,6 +92,9 @@ class NewTicket extends React.Component<Props, State> {
     render() {
         return (
             <div>
+                <div className="status-message">
+                    {this.state.statusMessage}
+                </div>
                 <div className='flex-header'>
                     <div className='individual-ticket-header-requestor'>
                         {this.state.requestor}

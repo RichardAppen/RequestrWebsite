@@ -71,7 +71,8 @@ class JoinGroup extends React.Component<Props, State> {
                         usersRole: "Member",
                         numberMembers: groupInfoSource.numberMembers++,
                         public: groupInfoSource.public,
-                        groupHash: groupInfoSource.groupHash
+                        groupHash: groupInfoSource.groupHash,
+                        stateMachineARN: groupInfoSource.stateMachineARN
                     }
 
                     this.postNewGroupEntry(finalGroupToAdd)

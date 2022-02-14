@@ -1,23 +1,22 @@
 import React from "react";
 import './Groups.css'
-import {Group} from "../utils/Group";
-import UserPool from "../UserPool";
-import {ChangeEvent} from "react";
-import {CognitoUser, AuthenticationDetails, CognitoUserAttribute} from "amazon-cognito-identity-js";
-import TicketGroup from "./TicketGroup";
-import {NavLink} from "react-router-dom";
-import { Link } from "react-router-dom";
-import {Md5} from "ts-md5";
 import {Ticket} from "../utils/Ticket";
+import {requestrTicketsAPI} from "../api/requestrTicketsAPI";
 import './IndividualTicket.css'
+import {Group} from "../utils/Group";
 
 interface State {
     comments: string[][]
     currentInput: string
+    commentStatusMessage: string
+    approveDenyStatusMessage: string
+    archiveStatusMessage: string
 }
 
 interface Props {
     ticket: Ticket
+    group: Group
+    archived: boolean
 }
 
 class IndividualTicket extends React.Component<Props, State> {
@@ -26,16 +25,68 @@ class IndividualTicket extends React.Component<Props, State> {
 
         this.state = {
             comments: this.props.ticket.comments,
-            currentInput: ""
+            currentInput: "",
+            commentStatusMessage: "",
+            approveDenyStatusMessage: "",
+            archiveStatusMessage: ""
         }
     }
 
     makeComment = () => {
         if (this.state.currentInput !== "") {
+            this.setState({commentStatusMessage: "Loading..."})
             const currSetOfComments = this.state.comments
-            const newComment = ["rappen", this.state.currentInput, new Date().toLocaleString()]
+            const newComment = [this.props.group.username, this.state.currentInput, new Date().toLocaleString()]
+            requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, 'Comment', JSON.stringify(newComment)).then((response) => {
+                currSetOfComments.unshift(newComment)
+                this.setState({comments: currSetOfComments, currentInput: "", commentStatusMessage: ""})
+            }).catch((error) => {
+                this.setState({commentStatusMessage: "Error: " + error, currentInput: ""})
+            })
+        }
+    }
+
+    approveOrDenyTicket = (username: string, usersRole: string, approvedOrDenied: string) => {
+        this.setState({approveDenyStatusMessage: "Loading..."})
+        const currSetOfComments = this.state.comments
+        const newComment = ["Requestr Automated System", `This ticket has been ${approvedOrDenied} by Group ${usersRole} ${username}. The comment section is now closed.`, new Date().toLocaleString()]
+        requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, approvedOrDenied, JSON.stringify(newComment)).then((response) => {
             currSetOfComments.unshift(newComment)
-            this.setState({comments: currSetOfComments, currentInput: ""})
+            this.setState({comments: currSetOfComments, currentInput: "", approveDenyStatusMessage: ""})
+            window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
+        }).catch((error) => {
+            this.setState({approveDenyStatusMessage: "Error: " + error, currentInput: ""})
+        })
+    }
+
+    archiveTicket = () => {
+        this.setState({archiveStatusMessage: "Loading..."})
+        requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, 'Archived', JSON.stringify([])).then((response) => {
+            this.setState({archiveStatusMessage: ""})
+            window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
+        }).catch((error) => {
+            this.setState({archiveStatusMessage: "Error: " + error})
+        })
+    }
+
+    userHasPower = () : boolean => {
+        if (this.props.group.usersRole !== "Member") {
+            return true
+        }
+        return false
+    }
+
+    determineStatusClass = () : string => {
+        switch (this.props.ticket.ticketData.status) {
+            case 'Approved': {
+                return 'individual-ticket-header-status-approved'
+            }
+            case 'Denied': {
+                return 'individual-ticket-header-status-denied'
+            }
+            default: {
+                return 'individual-ticket-header-status-pending'
+            }
         }
     }
 
@@ -43,19 +94,22 @@ class IndividualTicket extends React.Component<Props, State> {
         return (
 
             <div>
+                {this.props.archived && <div className="archived-message">
+                    {"This Ticket has been archived and is in READ ONLY mode. No further action is possible."}
+                </div>}
                 <div className='flex-header'>
                     <div className='individual-ticket-header-requestor'>
-                        {this.props.ticket.requestor}
+                        {this.props.ticket.ticketData.requestor}
                     </div>
                     <div className='individual-ticket-header-date'>
-                        {this.props.ticket.date}
+                        {this.props.ticket.ticketData.date}
                     </div>
                 </div>
                 <div className='individual-ticket-header-subject'>
-                    {this.props.ticket.subject}
+                    {this.props.ticket.ticketData.subject}
                 </div>
-                <div className='individual-ticket-header-status'>
-                    {this.props.ticket.status}
+                <div className={this.determineStatusClass()}>
+                    {this.props.ticket.ticketData.status}
                 </div>
                 <div className='divider-special'>
 
@@ -64,12 +118,12 @@ class IndividualTicket extends React.Component<Props, State> {
                     Description:
                 </div>
                 <div className='individual-ticket-description'>
-                    <p>{this.props.ticket.description}</p>
+                    <p>{this.props.ticket.ticketData.description}</p>
                 </div>
                 <div className='individual-ticket-header-entries'>
                     Comments:
                 </div>
-                <div className='comment-box'>
+                <div className={this.props.archived ? 'comment-box-archived' : 'comment-box'}>
                     {this.state.comments.map((comment, index) =>
                         <div className="single-comment-container">
                             <div className='single-comment-commenter'>
@@ -84,12 +138,28 @@ class IndividualTicket extends React.Component<Props, State> {
                         </div>
                     )}
                 </div>
-                <div className='make-comment'>
+                <div className="status-message">
+                    {this.state.commentStatusMessage}
+                </div>
+                {(this.props.ticket.ticketData.status === 'Pending') && <div className='make-comment'>
                     <input value={this.state.currentInput} onChange={(e) => {this.setState({currentInput: e.target.value})}}></input>
                     <div>
-                    <button onClick={this.makeComment}>Comment</button>
+                    <button onClick={this.makeComment} disabled={(this.props.ticket.ticketData.status !== 'Pending')}>Comment</button>
                     </div>
-                </div>
+                </div>}
+                {this.userHasPower() && (this.props.ticket.ticketData.status === 'Pending') && <div className="approve-deny-container">
+                    <div className="status-message">
+                        {this.state.approveDenyStatusMessage}
+                    </div>
+                    <button className="approve-deny-button" onClick={() => {this.approveOrDenyTicket(this.props.group.username, this.props.group.usersRole, 'Approved')}}> Approve </button>
+                    <button className="approve-deny-button" onClick={() => {this.approveOrDenyTicket(this.props.group.username, this.props.group.usersRole, 'Denied')}}> Deny </button>
+                </div>}
+                {this.userHasPower() && (!this.props.archived) && (this.props.ticket.ticketData.status !== 'Pending') && <div className="approve-deny-container">
+                    <div className="status-message">
+                        {this.state.archiveStatusMessage}
+                    </div>
+                    <button className="approve-deny-button" onClick={() => {this.archiveTicket()}}> Archive </button>
+                </div>}
             </div>
         )
     }

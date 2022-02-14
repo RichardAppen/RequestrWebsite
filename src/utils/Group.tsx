@@ -7,6 +7,7 @@ export interface Group {
     usersRole: string,
     numberMembers: number,
     public: boolean,
+    stateMachineARN?: string,
     groupHash?: string,
     members?: Member[]
 }

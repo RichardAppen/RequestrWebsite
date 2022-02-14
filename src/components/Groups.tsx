@@ -97,7 +97,7 @@ class Groups extends React.Component<Props, State> {
     }
 
     goToTicketGroup = (group: Group) => {
-        window.location.href = `/Groups/${group.groupHash}`
+        window.location.href = `/Groups/${group.groupHash}/active`
     }
 
     goToCreateGroup = () => {
