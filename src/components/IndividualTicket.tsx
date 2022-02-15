@@ -4,6 +4,7 @@ import {Ticket} from "../utils/Ticket";
 import {requestrTicketsAPI} from "../api/requestrTicketsAPI";
 import './IndividualTicket.css'
 import {Group} from "../utils/Group";
+import {Execution} from "../utils/Execution";
 
 interface State {
     comments: string[][]
@@ -35,13 +36,21 @@ class IndividualTicket extends React.Component<Props, State> {
     makeComment = () => {
         if (this.state.currentInput !== "") {
             this.setState({commentStatusMessage: "Loading..."})
-            const currSetOfComments = this.state.comments
-            const newComment = [this.props.group.username, this.state.currentInput, new Date().toLocaleString()]
-            requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, 'Comment', JSON.stringify(newComment)).then((response) => {
-                currSetOfComments.unshift(newComment)
-                this.setState({comments: currSetOfComments, currentInput: "", commentStatusMessage: ""})
-            }).catch((error) => {
-                this.setState({commentStatusMessage: "Error: " + error, currentInput: ""})
+            //First check if there weren't updates from another user
+            requestrTicketsAPI.getTicketExecutionsByStateMachineARN(this.props.group.stateMachineARN!,"RUNNING").then((response ) => {
+                // Find matching ticket
+                    response.data.forEach((execution: Execution) => {
+                        if (execution.request.ticketData.ticketId === this.props.ticket.ticketData.ticketId) {
+                            const currSetOfComments = execution.request.comments
+                            const newComment = [this.props.group.username, this.state.currentInput, new Date().toLocaleString()]
+                            requestrTicketsAPI.interactWithTicket(execution.token, 'Comment', JSON.stringify(newComment)).then((response) => {
+                                currSetOfComments.unshift(newComment)
+                                this.setState({comments: currSetOfComments, currentInput: "", commentStatusMessage: ""})
+                            }).catch((error) => {
+                                this.setState({commentStatusMessage: "Error: " + error, currentInput: ""})
+                            })
+                        }
+                    })
             })
         }
     }

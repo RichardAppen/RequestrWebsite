@@ -33,7 +33,8 @@ interface State {
     archiveStatusMessage: string,
     viewingArchive: boolean,
     ticketFromUrl?: Ticket,
-    belowTableStatusMessage: string
+    belowTableStatusMessage: string,
+    tableRef: React.RefObject<any>
 }
 
 interface Props {
@@ -63,7 +64,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
             tableStatusMessage: "",
             archiveStatusMessage: "",
             viewingArchive: false,
-            belowTableStatusMessage: ""
+            belowTableStatusMessage: "",
+            tableRef: React.createRef()
         }
     }
 
@@ -284,6 +286,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
     handleArchiveButtonPressed = () => {
         this.setState({viewingArchive: !this.state.viewingArchive, belowTableStatusMessage: ""})
+        this.state.tableRef.current.scrollIntoView()
         if (!this.state.viewingArchive) {
             window.history.replaceState(null, '', `/Groups/${this.props.hash}/archived`)
         } else {
@@ -331,10 +334,10 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                             <button className='archived-tickets-button' onClick={this.handleArchiveButtonPressed}>{this.state.viewingArchive ? 'Active Tickets' : 'Archived Tickets'}</button>
                             <button className='new-ticket-button' onClick={this.handleNewTicketPressed}> New Ticket </button>
                             <h1 className='ticket-title'> {this.state.viewingArchive ? 'Archived Tickets' : 'Tickets'} </h1>
-                            <div className='table'>
+                            <div ref={this.state.tableRef} className='table'>
                                 {this.state.renderNewTicketWindow ?
                                     <div>
-                                        <div className='flex-header-grey'>
+                                        <div className='flex-header-pending'>
                                             <button className='ticket-selected-back-button' onClick={this.backButtonPressed}>Back</button>
                                             <div className='ticket-selected-id'>New Ticket</div>
                                         </div>

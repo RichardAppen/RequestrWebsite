@@ -9,6 +9,7 @@ import Profile from "./components/Profile";
 import Settings from "./components/Settings";
 import Groups from "./components/Groups";
 import TicketGroup from "./components/TicketGroup";
+import Home from "./components/Home"
 import TicketGroupWrapper from "./components/TicketGroupWrapper";
 
 function App() {
@@ -20,7 +21,7 @@ function App() {
               </header>
           </div>
           <Routes>
-              <Route path="/" element={<Testing incoming={"Testing Props"}/>}></Route>
+              <Route path="/" element={<Home></Home>}></Route>
               <Route path="/SignUp" element={<SignUp></SignUp>}></Route>
               <Route path="/Login" element={<Login></Login>}></Route>
               <Route path="/Profile" element={<Profile></Profile>}></Route>

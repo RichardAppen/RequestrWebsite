@@ -1,0 +1,62 @@
+.main-title {
+    margin: auto;
+    width: fit-content;
+    padding-top: 30px;
+    padding-bottom: 20px;
+    color: #9d1c00;
+}
+
+.quick-links-header {
+    margin: auto;
+    width: fit-content;
+    padding-bottom: 10px;
+}
+
+.no-recently-viewed-tickets-text {
+    margin: auto;
+    width: fit-content;
+    padding-bottom: 50px;
+}
+
+.divider-special {
+    border: 1px solid black;
+    margin: 5px 50px 0px 50px;
+    border-radius: 100px;
+    padding-top: 2px;
+}
+
+.recently-viewed-ticket-container {
+    padding-bottom: 50px;
+}
+
+.individual-recently-viewed-ticket {
+    margin: 10px auto;
+    width: 40vw;
+    padding: 10px;
+    text-align: left;
+    border: black 2px solid;
+    border-radius: 4px;
+    background: lightgrey;
+    display: block;
+    box-shadow: black;
+    position: relative;
+}
+
+.recently-viewed-ticket-group-header {
+    font-weight: bold;
+    overflow: auto;
+}
+
+.arrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.log-in-greeting {
+    padding-top: 30px;
+    margin: auto;
+    width: fit-content;
+    color: #9d1c00;
+}

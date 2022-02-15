@@ -76,7 +76,6 @@
     width: 60vw;
     height: 70vh;
     border: solid #9d1c00 4px;
-    scroll-behavior: smooth;
     overflow: scroll;
 }
 

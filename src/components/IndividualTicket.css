@@ -73,7 +73,7 @@
     margin: 5px 50px 0px 50px;
     height: 30vh;
     scroll-behavior: smooth;
-    overflow: scroll;
+    overflow: auto;
     display: flex;
     flex-direction: column-reverse;
 }
@@ -83,7 +83,7 @@
     margin: 5px 50px 100px 50px;
     height: 30vh;
     scroll-behavior: smooth;
-    overflow: scroll;
+    overflow: auto;
     display: flex;
     flex-direction: column-reverse;
 

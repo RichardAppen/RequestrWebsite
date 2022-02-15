@@ -5,6 +5,7 @@ import {CognitoUser} from "amazon-cognito-identity-js";
 import {Ticket} from "../utils/Ticket";
 import IndividualTicket from "./IndividualTicket";
 import {isNull} from "util";
+import {RecentlyViewedTicket} from "../utils/RecentlyViewedTicket"
 
 interface State {
     ticketSelected?: Ticket
@@ -37,7 +38,36 @@ class Table extends React.Component<Props, State> {
     handleRowClick = (ticket: Ticket) => {
         this.props.setBelowTableStatusMessageToEmpty()
         this.setState({ticketSelected: ticket, renderTable: false})
-        window.history.replaceState(null, "", `/Groups/${this.props.group.groupHash}/${this.props.archived ? 'archived' : 'active'}/${ticket.ticketData.ticketId}`)
+        const ticketURL = `/Groups/${this.props.group.groupHash}/${this.props.archived ? 'archived' : 'active'}/${ticket.ticketData.ticketId}`
+        window.history.replaceState(null, "", ticketURL)
+
+        // Deal with 'Recently Viewed Tickets'
+        const ticketAboutToBeViewed : RecentlyViewedTicket = {
+            url: ticketURL,
+            subject: ticket.ticketData.subject,
+            requestor: ticket.ticketData.requestor,
+            group: this.props.group.groupName
+        }
+        const recentlyViewedTicketsString = localStorage.getItem('recentlyViewedTickets')
+        if (recentlyViewedTicketsString) {
+            let recentlyViewedTickets: RecentlyViewedTicket[] = JSON.parse(recentlyViewedTicketsString)
+            // check if its already listed
+            let listed = false
+            recentlyViewedTickets.forEach((recentlyViewedTicket) => {
+                if (recentlyViewedTicket.url === ticketAboutToBeViewed.url) {
+                    listed = true
+                }
+            })
+            if (!listed) {
+                recentlyViewedTickets.unshift(ticketAboutToBeViewed)
+                if (recentlyViewedTickets.length > 3) {
+                    recentlyViewedTickets = recentlyViewedTickets.slice(0, 3)
+                }
+                localStorage.setItem('recentlyViewedTickets', JSON.stringify(recentlyViewedTickets))
+            }
+        } else {
+            localStorage.setItem('recentlyViewedTickets', JSON.stringify([ticketAboutToBeViewed]))
+        }
     }
 
     backButtonPressed = () => {
@@ -86,8 +116,8 @@ class Table extends React.Component<Props, State> {
             <div>
                 {this.state.renderTable && <div>
                 <div className='column-headers-row'>
-                    <div className='requestID-header'>
-                        Request ID
+                    <div className='ticketID-header'>
+                        Ticket ID
                     </div>
                     <div className='requestor-header'>
                         Requestor
@@ -104,7 +134,7 @@ class Table extends React.Component<Props, State> {
                 </div>
                 {this.props.tickets.map(ticket =>
                     <div className={this.determineRowClass(ticket)} onClick={() => {this.handleRowClick(ticket)}}>
-                        <div className='requestID-entry'>
+                        <div className='ticketID-entry'>
                             {ticket.ticketData.ticketId}
                         </div>
                         <div className='requestor-entry'>

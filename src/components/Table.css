@@ -22,7 +22,7 @@
     display: inline-flex;
     text-align: center;
     width: 60vw;
-    background-color: #ed2f2f;
+    background-color: rgb(255,8,8,.5);
 }
 
 .regular-row-archived {
@@ -32,7 +32,7 @@
     background-color: lightgrey;
 }
 
-.requestID-header {
+.ticketID-header {
     border: solid black 2px;
     width: 10vw;
     padding: 5px 0px 5px;
@@ -62,25 +62,25 @@
     padding: 5px 0px 5px;
 }
 
-.requestID-entry {
+.ticketID-entry {
     border: solid black 1px;
     width: 10vw;
     padding: 10px 0px 10px;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .requestor-entry {
     border: solid black 1px;
     width: 11vw;
     padding: 10px 0px 10px;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .subject-entry {
     border: solid black 1px;
     width: 19vw;
     padding: 10px 0px 10px;
-    overflow: scroll;
+    overflow: auto;
 }
 
 .date-entry {
@@ -134,7 +134,7 @@
 
 .flex-header-denied {
     display: flex;
-    background: #ed2f2f;
+    background: rgb(255,8,8,.5);
     position: relative;
 }
 
