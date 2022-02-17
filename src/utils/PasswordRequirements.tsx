@@ -4,6 +4,5 @@ export interface PasswordRequirements {
     hasUppercase: boolean
     hasDigit: boolean
     hasSpecial: boolean
-
 }
 

@@ -35,6 +35,8 @@ class Home extends React.Component<Props, State> {
             user.getSession(() => {
                 this.setState({welcomeMessage: "Hi " + user.getUsername() + "!", statusMessage: ""})
             })
+        } else {
+            this.setState({statusMessage: ""})
         }
     }
 

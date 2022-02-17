@@ -17,7 +17,7 @@ interface Props {
     group: Group
     archived: boolean
     ticketFromURL?: Ticket
-    setBelowTableStatusMessageToEmpty: () => void
+    handleIndividualTicketWasSelected: () => void
 }
 
 class Table extends React.Component<Props, State> {
@@ -36,7 +36,7 @@ class Table extends React.Component<Props, State> {
     }
 
     handleRowClick = (ticket: Ticket) => {
-        this.props.setBelowTableStatusMessageToEmpty()
+        this.props.handleIndividualTicketWasSelected()
         this.setState({ticketSelected: ticket, renderTable: false})
         const ticketURL = `/Groups/${this.props.group.groupHash}/${this.props.archived ? 'archived' : 'active'}/${ticket.ticketData.ticketId}`
         window.history.replaceState(null, "", ticketURL)
@@ -154,7 +154,6 @@ class Table extends React.Component<Props, State> {
                 </div>}
                 {(this.state.ticketSelected) && <div>
                     <div className={this.determineHeaderClass()}>
-                        <button className='ticket-selected-back-button' onClick={this.backButtonPressed}>Back</button>
                         <div className='ticket-selected-id'>Ticket ID: {this.state.ticketSelected.ticketData.ticketId}</div>
                     </div>
                     <div className='ticket-selected-div'></div>

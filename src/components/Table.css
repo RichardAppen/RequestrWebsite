@@ -113,6 +113,7 @@
     padding-bottom: 10px;
     left: 0;
     position: absolute;
+    top: -0.5vh;
 }
 
 .ticket-selected-div {
@@ -123,23 +124,19 @@
 .flex-header-archived {
     display: flex;
     background: lightgrey;
-    position: relative;
 }
 
 .flex-header-approved {
     display: flex;
     background: lightgreen;
-    position: relative;
 }
 
 .flex-header-denied {
     display: flex;
     background: rgb(255,8,8,.5);
-    position: relative;
 }
 
 .flex-header-pending {
     display: flex;
     background: lightgrey;
-    position: relative;
 }

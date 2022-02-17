@@ -7,4 +7,4 @@
 - Upload contents of build folder to the bucket
 
 # Current Link
-http://rappen-project.com.s3-website-us-east-1.amazonaws.com/
+www.Requestr.org

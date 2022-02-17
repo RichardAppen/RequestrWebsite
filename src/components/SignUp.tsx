@@ -7,6 +7,7 @@ import {ChangeEvent} from "react";
 import {CognitoUser, CognitoUserAttribute} from "amazon-cognito-identity-js";
 import {UserInfo} from "../utils/UserInfo";
 import {PasswordRequirements} from "../utils/PasswordRequirements";
+import {UsernameRequirements} from "../utils/UsernameRequirements";
 
 interface State {
     firstName: string
@@ -20,6 +21,7 @@ interface State {
     statusMessage: string
     loading: boolean
     passwordReqs: PasswordRequirements
+    usernameReqs: UsernameRequirements
 }
 
 interface Props {
@@ -46,6 +48,11 @@ class SignUp extends React.Component<Props, State> {
                 hasUppercase: false,
                 hasDigit: false,
                 hasSpecial: false
+            },
+            usernameReqs: {
+                hasNoSpecial: true,
+                hasNoSpace: true,
+                isNotEmpty: false
             }
         }
 
@@ -97,7 +104,7 @@ class SignUp extends React.Component<Props, State> {
         }
     }
 
-    checkPasswordRes = (currPass: string) => {
+    checkPasswordReqs = (currPass: string) => {
         const passwordReqs = this.state.passwordReqs
 
         if (currPass.length >= 10) {
@@ -130,10 +137,42 @@ class SignUp extends React.Component<Props, State> {
         this.setState({passwordReqs: passwordReqs})
     }
 
+    checkUsernameReqs = (currUsername: string) => {
+        const usernameReqs : UsernameRequirements = this.state.usernameReqs
+
+        let regexSymb = new RegExp('[`!@#$%^&*()_+={};:",.<>/?~-]')
+        if (regexSymb.test(currUsername)) {
+            usernameReqs.hasNoSpecial = false
+        } else {
+            usernameReqs.hasNoSpecial  = true
+        }
+
+        regexSymb = new RegExp(' ')
+        if (regexSymb.test(currUsername)) {
+            usernameReqs.hasNoSpace = false
+        } else {
+            usernameReqs.hasNoSpace  = true
+        }
+
+        usernameReqs.isNotEmpty = (currUsername !== "")
+
+        this.setState({usernameReqs: usernameReqs})
+
+
+    }
+
     signUpEnabled = () => {
         const passwordReqs = this.state.passwordReqs
+        const usernameReqs = this.state.usernameReqs
 
-        if (passwordReqs.minimumSize && passwordReqs.hasLowercase && passwordReqs.hasUppercase && passwordReqs.hasDigit && passwordReqs.hasSpecial) {
+        if (passwordReqs.minimumSize &&
+            passwordReqs.hasLowercase &&
+            passwordReqs.hasUppercase &&
+            passwordReqs.hasDigit &&
+            passwordReqs.hasSpecial &&
+            usernameReqs.hasNoSpecial &&
+            usernameReqs.hasNoSpace &&
+            usernameReqs.isNotEmpty) {
             return true
         }
         return false
@@ -155,11 +194,12 @@ class SignUp extends React.Component<Props, State> {
             }
             case "username": {
                 this.setState({username: event.target.value})
+                this.checkUsernameReqs(event.target.value)
                 break;
             }
             case "password": {
                 this.setState({password: event.target.value})
-                this.checkPasswordRes(event.target.value)
+                this.checkPasswordReqs(event.target.value)
                 break;
             }
             case "verify": {
@@ -189,6 +229,20 @@ class SignUp extends React.Component<Props, State> {
                         </li>
                         <li>
                             <input id="password" type="text" placeholder="Password" onChange={this.inputChange}></input>
+                        </li>
+                        <li>
+                            <span>{"username must:"}</span>
+                            <ul>
+                                <li>
+                                    <span className={this.state.usernameReqs.hasNoSpecial ? "green" : "red"}>{"- Include NO special characters"}</span>
+                                </li>
+                                <li>
+                                    <span className={this.state.usernameReqs.hasNoSpace ? "green" : "red"}>{"- Include NO spaces"}</span>
+                                </li>
+                                <li>
+                                    <span className={this.state.usernameReqs.isNotEmpty ? "green" : "red"}>{"- Not be empty"}</span>
+                                </li>
+                            </ul>
                         </li>
                         <li>
                             <span>{"Password must include:"}</span>
