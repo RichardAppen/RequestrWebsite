@@ -19,24 +19,17 @@ interface State {
 interface Props {
     addTicket: () => void;
     stateMachineARN: string;
+    username: string
 }
 
 class NewTicket extends React.Component<Props, State> {
     constructor(props: Props) {
         super(props);
 
-        const user = UserPool.getCurrentUser()
-        let username = ""
-        if (user) {
-            user.getSession(() => {
-                username = user.getUsername()
-            })
-        }
-
         this.state = {
             newTicketDescription: "",
             newTicketSubject: "",
-            requestor: username,
+            requestor: this.props.username,
             date: new Date().toLocaleString(),
             statusMessage: ""
         }

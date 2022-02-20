@@ -116,7 +116,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                 this.state.archivedTickets.forEach((ticket) => {
                     if (ticket.ticketData.ticketId === this.props.ticketId) {
                         found = true
-                        this.setState({ticketFromUrl: ticket})
+                        this.setState({ticketFromUrl: ticket, renderIndividualTicket: true})
                         return
                     }
                 })
@@ -143,7 +143,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                 this.state.tickets.forEach((ticket) => {
                     if (ticket.ticketData.ticketId === this.props.ticketId) {
                         found = true
-                        this.setState({ticketFromUrl: ticket})
+                        this.setState({ticketFromUrl: ticket, renderIndividualTicket: true})
                         return
                     }
                 })
@@ -208,7 +208,6 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     }
 
     backButtonPressed = () => {
-        this.state.tableRef.current.scrollIntoView()
         this.setState({renderNewTicketWindow: false, belowTableStatusMessage: "", renderIndividualTicket: false})
        if (this.state.tableComponentRef.current) {
            this.state.tableComponentRef.current.backButtonPressed()
@@ -294,7 +293,6 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
     handleArchiveButtonPressed = () => {
         this.setState({viewingArchive: !this.state.viewingArchive, belowTableStatusMessage: "", renderIndividualTicket: false, renderNewTicketWindow: false})
-        this.state.tableRef.current.scrollIntoView()
         if (!this.state.viewingArchive) {
             window.history.replaceState(null, '', `/Groups/${this.props.hash}/archived`)
         } else {
@@ -352,7 +350,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                             <div className='ticket-selected-id'>New Ticket</div>
                                         </div>
                                         <div className='ticket-selected-div'></div>
-                                        <NewTicket addTicket={this.addTicket} stateMachineARN={this.state.group.stateMachineARN!}></NewTicket>
+                                        <NewTicket addTicket={this.addTicket} stateMachineARN={this.state.group.stateMachineARN!} username={this.state.group.username}></NewTicket>
                                     </div>
                                     :
                                     <div>

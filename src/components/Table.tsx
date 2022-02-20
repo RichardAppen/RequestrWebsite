@@ -10,6 +10,7 @@ import {RecentlyViewedTicket} from "../utils/RecentlyViewedTicket"
 interface State {
     ticketSelected?: Ticket
     renderTable: boolean
+    headerRef: React.RefObject<any>
 }
 
 interface Props {
@@ -25,7 +26,8 @@ class Table extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            renderTable: true
+            renderTable: true,
+            headerRef: React.createRef()
         }
     }
 
@@ -68,6 +70,7 @@ class Table extends React.Component<Props, State> {
         } else {
             localStorage.setItem('recentlyViewedTickets', JSON.stringify([ticketAboutToBeViewed]))
         }
+        this.state.headerRef.current.scrollIntoView()
     }
 
     backButtonPressed = () => {
@@ -113,7 +116,7 @@ class Table extends React.Component<Props, State> {
 
     render() {
         return (
-            <div>
+            <div ref={this.state.headerRef} >
                 {this.state.renderTable && <div>
                 <div className='column-headers-row'>
                     <div className='ticketID-header'>
