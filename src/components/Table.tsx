@@ -78,6 +78,10 @@ class Table extends React.Component<Props, State> {
         window.history.replaceState(null, "", `/Groups/${this.props.group.groupHash}/${this.props.archived ? 'archived' : 'active'}`)
     }
 
+    scrollToTopOfTable = () => {
+        this.state.headerRef.current.scrollIntoView()
+    }
+
     determineRowClass = (currentTicket: Ticket) : string => {
         if (this.props.archived) {
             return 'regular-row-archived'

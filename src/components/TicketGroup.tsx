@@ -99,6 +99,9 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     }
 
     loadGroupsTickets = async () => {
+        if (this.state.tickets !== []) {
+            this.setState({tickets: []})
+        }
         if (this.props.archived === "archived") {
             this.setState({viewingArchive: true})
         } else if (this.props.archived == 'active') {
@@ -208,6 +211,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     }
 
     backButtonPressed = () => {
+        this.state.tableComponentRef.current?.scrollToTopOfTable()
         this.setState({renderNewTicketWindow: false, belowTableStatusMessage: "", renderIndividualTicket: false})
        if (this.state.tableComponentRef.current) {
            this.state.tableComponentRef.current.backButtonPressed()
@@ -292,6 +296,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     }
 
     handleArchiveButtonPressed = () => {
+        this.state.tableComponentRef.current?.scrollToTopOfTable()
         this.setState({viewingArchive: !this.state.viewingArchive, belowTableStatusMessage: "", renderIndividualTicket: false, renderNewTicketWindow: false})
         if (!this.state.viewingArchive) {
             window.history.replaceState(null, '', `/Groups/${this.props.hash}/archived`)
