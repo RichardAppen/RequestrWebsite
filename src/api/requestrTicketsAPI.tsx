@@ -30,13 +30,16 @@ export module requestrTicketsAPI {
             })
     }
 
-    export function getTicketExecutionsByStateMachineARN(stateMachineARN: string, statusFilter: string) {
+    export function getTicketExecutionsByStateMachineARN(stateMachineARN: string, statusFilter: string, username: string, usersRole: string, publicFlag: boolean) {
         return axios.get(
             GET_TICKET_EXECUTIONS_BY_STATE_MACHINE_ARN,
             {
                 params: {
                     stateMachineARN: stateMachineARN,
-                    statusFilter: statusFilter
+                    statusFilter: statusFilter,
+                    username: username,
+                    usersRole: usersRole,
+                    groupType: publicFlag ? "public" : "private"
                 }
             })
     }

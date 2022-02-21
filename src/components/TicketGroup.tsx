@@ -112,7 +112,12 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
         }
         this.setState({tableStatusMessage: "Loading...", archiveStatusMessage: "Loading..."})
 
-        requestrTicketsAPI.getTicketExecutionsByStateMachineARN(this.state.group.stateMachineARN!, 'SUCCEEDED').then((response) => {
+        requestrTicketsAPI.getTicketExecutionsByStateMachineARN(
+            this.state.group.stateMachineARN!,
+            'SUCCEEDED',
+            this.state.group.username,
+            this.state.group.usersRole,
+            this.state.group.public).then((response) => {
             this.setState({archivedTickets: response.data, archiveStatusMessage: ""})
             if (this.props.ticketId && this.props.archived === 'archived') {
                 let found: boolean = false
@@ -132,7 +137,12 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
             this.setState({archiveStatusMessage: "Error: " + error})
         })
 
-        await requestrTicketsAPI.getTicketExecutionsByStateMachineARN(this.state.group.stateMachineARN!, 'RUNNING').then((response) => {
+        await requestrTicketsAPI.getTicketExecutionsByStateMachineARN(
+            this.state.group.stateMachineARN!,
+            'RUNNING',
+            this.state.group.username,
+            this.state.group.usersRole,
+            this.state.group.public).then((response) => {
             console.log(response)
             let groupsTickets: Ticket[] = []
             response.data.forEach((execution: Execution) => {
@@ -355,7 +365,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                             <div className='ticket-selected-id'>New Ticket</div>
                                         </div>
                                         <div className='ticket-selected-div'></div>
-                                        <NewTicket addTicket={this.addTicket} stateMachineARN={this.state.group.stateMachineARN!} username={this.state.group.username}></NewTicket>
+                                        <NewTicket addTicket={this.addTicket} stateMachineARN={this.state.group.stateMachineARN!} group={this.state.group}></NewTicket>
                                     </div>
                                     :
                                     <div>
@@ -407,6 +417,11 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                 <div>
                                     <div className="group-info-headers">Number of Members:</div>
                                     <div className="group-info-entries">{this.state.group.numberMembers}</div>
+                                </div>
+                                <div>
+                                    <div className="group-info-headers">Group Type:</div>
+                                    <div className="group-info-entries">{this.state.group.public ? 'Public' : 'Private'}</div>
+                                    <div className="unique-code-text"> {this.state.group.public ? 'In a public group, all members of the group can see all tickets' : 'In a private group, tickets can only be seen by admins, the owner, and the requestor of the ticket'} </div>
                                 </div>
                                 <h2> Unique Code: </h2>
                                 <div className="unique-code"> {this.state.group.groupHash}</div>

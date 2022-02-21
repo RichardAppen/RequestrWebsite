@@ -144,6 +144,15 @@ class CreateGroup extends React.Component<Props, State> {
                                         Private
                                     </div>
                                 </div>
+                                <div className="radio-button-input-div">
+                                    <p>
+                                        <div>{"Public Group: All members can see all tickets in the group. No tickets are private and all are accessible regardless of role."} </div>
+                                        <br></br>
+                                        <div>{"Private Group: Admins and the group Owner can view all tickets, while Members can only view tickets they created."}</div>
+                                        <br></br>
+                                        <div>{"This CANNOT be changed after the group is created."}</div>
+                                    </p>
+                                </div>
                             </div>
                         </li>
                         <li>

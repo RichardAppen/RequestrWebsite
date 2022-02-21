@@ -7,6 +7,8 @@ import IndividualTicket from "./IndividualTicket";
 import newTicket from "./NewTicket";
 import UserPool from "../UserPool";
 import {requestrTicketsAPI} from "../api/requestrTicketsAPI";
+import {requestrGroupsAPI} from "../api/requestrGroupsAPI";
+import {Group} from "../utils/Group";
 
 interface State {
     newTicketSubject: string;
@@ -19,7 +21,7 @@ interface State {
 interface Props {
     addTicket: () => void;
     stateMachineARN: string;
-    username: string
+    group: Group
 }
 
 class NewTicket extends React.Component<Props, State> {
@@ -29,7 +31,7 @@ class NewTicket extends React.Component<Props, State> {
         this.state = {
             newTicketDescription: "",
             newTicketSubject: "",
-            requestor: this.props.username,
+            requestor: this.props.group.username,
             date: new Date().toLocaleString(),
             statusMessage: ""
         }
@@ -49,33 +51,58 @@ class NewTicket extends React.Component<Props, State> {
     createTicketPressed = async () => {
         if (this.state.newTicketDescription != "" && this.state.newTicketSubject != "") {
             this.setState({statusMessage: "Loading..."})
-            let newTicketMd5 = new Md5()
-            newTicketMd5.appendStr(this.state.requestor)
-            newTicketMd5.appendStr(this.state.newTicketSubject)
-            newTicketMd5.appendStr(this.state.newTicketDescription)
-            const finalHash = newTicketMd5.end() as string
 
-            const finalTicketToAdd: Ticket = {
-                ticketData: {
-                    ticketId: finalHash,
-                    requestor: this.state.requestor,
-                    subject: this.state.newTicketSubject,
-                    date: new Date().toLocaleString(),
-                    status: "Pending",
-                    description: this.state.newTicketDescription
-                },
-                comments: []
-            }
+            // Make sure user is still a member of the group
+            this.userIsStillPartOfTheGroup().then(async (userInGroup) => {
+                if (userInGroup) {
+                    let newTicketMd5 = new Md5()
+                    newTicketMd5.appendStr(this.state.requestor)
+                    newTicketMd5.appendStr(this.state.newTicketSubject)
+                    newTicketMd5.appendStr(this.state.newTicketDescription)
+                    const finalHash = newTicketMd5.end() as string
 
-            await requestrTicketsAPI.createTicket(finalTicketToAdd.ticketData, this.props.stateMachineARN).then((response) => {
-                console.log(response)
-                this.setState({statusMessage: "Ticket created successfully!"})
-                this.props.addTicket()
-            }).catch((error) => {
-                console.log(error)
-                this.setState({statusMessage: "Error: " + error})
+                    const finalTicketToAdd: Ticket = {
+                        ticketData: {
+                            ticketId: finalHash,
+                            requestor: this.state.requestor,
+                            subject: this.state.newTicketSubject,
+                            date: new Date().toLocaleString(),
+                            status: "Pending",
+                            description: this.state.newTicketDescription
+                        },
+                        comments: []
+                    }
+
+                    await requestrTicketsAPI.createTicket(finalTicketToAdd.ticketData, this.props.stateMachineARN).then((response) => {
+                        console.log(response)
+                        this.setState({statusMessage: "Ticket created successfully!"})
+                        this.props.addTicket()
+                    }).catch((error) => {
+                        console.log(error)
+                        this.setState({statusMessage: "Error: " + error})
+                    })
+                } else {
+                    this.setState({statusMessage: ""})
+                    window.location.href = `/Groups/${this.props.group.groupHash!}`
+                }
             })
         }
+    }
+
+    userIsStillPartOfTheGroup = async () : Promise<boolean> => {
+        let isMember = false
+        await requestrGroupsAPI.getEntriesByUsername(this.props.group.username)
+            .then( (response) => {
+                response.data.forEach((group: Group) => {
+                    if (this.props.group.groupHash! === group.groupHash) {
+                        isMember = true
+                    }
+                })
+            }).catch((error) => {
+            })
+        return new Promise<boolean>((resolve, reject) => {
+            resolve(isMember)
+        })
     }
 
     updateTime = () => {

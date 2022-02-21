@@ -5,6 +5,7 @@ import {requestrTicketsAPI} from "../api/requestrTicketsAPI";
 import './IndividualTicket.css'
 import {Group} from "../utils/Group";
 import {Execution} from "../utils/Execution";
+import {requestrGroupsAPI} from "../api/requestrGroupsAPI";
 
 interface State {
     comments: string[][]
@@ -36,45 +37,102 @@ class IndividualTicket extends React.Component<Props, State> {
     makeComment = () => {
         if (this.state.currentInput !== "") {
             this.setState({commentStatusMessage: "Loading..."})
-            //First check if there weren't updates from another user
-            requestrTicketsAPI.getTicketExecutionsByStateMachineARN(this.props.group.stateMachineARN!,"RUNNING").then((response ) => {
-                // Find matching ticket
-                    response.data.forEach((execution: Execution) => {
-                        if (execution.request.ticketData.ticketId === this.props.ticket.ticketData.ticketId) {
-                            const currSetOfComments = execution.request.comments
-                            const newComment = [this.props.group.username, this.state.currentInput, new Date().toLocaleString()]
-                            requestrTicketsAPI.interactWithTicket(execution.token, 'Comment', JSON.stringify(newComment)).then((response) => {
-                                currSetOfComments.unshift(newComment)
-                                this.setState({comments: currSetOfComments, currentInput: "", commentStatusMessage: ""})
-                            }).catch((error) => {
-                                this.setState({commentStatusMessage: "Error: " + error, currentInput: ""})
-                            })
+            // first make sure the user hasn't been kicked out
+            this.userIsStillPartOfTheGroup().then((userInGroup) => {
+                if (userInGroup) {
+                    //Second check if there weren't updates from another user
+                    requestrTicketsAPI.getTicketExecutionsByStateMachineARN(
+                        this.props.group.stateMachineARN!,
+                        "RUNNING",
+                        this.props.group.username,
+                        this.props.group.usersRole,
+                        this.props.group.public).then((response ) => {
+                        // Find matching ticket
+                        let foundTicket = false
+                        response.data.forEach((execution: Execution) => {
+                            if (execution.request.ticketData.ticketId === this.props.ticket.ticketData.ticketId && execution.request.ticketData.status === 'Pending') {
+                                foundTicket = true
+                                const currSetOfComments = execution.request.comments
+                                const newComment = [this.props.group.username, this.state.currentInput, new Date().toLocaleString()]
+                                requestrTicketsAPI.interactWithTicket(execution.token, 'Comment', JSON.stringify(newComment)).then((response) => {
+                                    currSetOfComments.unshift(newComment)
+                                    this.setState({
+                                        comments: currSetOfComments,
+                                        currentInput: "",
+                                        commentStatusMessage: ""
+                                    })
+                                }).catch((error) => {
+                                    this.setState({commentStatusMessage: "Error: " + error, currentInput: ""})
+                                })
+                            }
+                        })
+                        if (!foundTicket) {
+                            this.setState({commentStatusMessage: ""})
+                            window.location.href = `/Groups/${this.props.group.groupHash!}/active`
                         }
                     })
+                } else {
+                    this.setState({commentStatusMessage: ""})
+                    window.location.href = `/Groups/${this.props.group.groupHash!}/active`
+                }
             })
         }
     }
 
     approveOrDenyTicket = (username: string, usersRole: string, approvedOrDenied: string) => {
         this.setState({approveDenyStatusMessage: "Loading..."})
-        const currSetOfComments = this.state.comments
-        const newComment = ["Requestr Automated System", `This ticket has been ${approvedOrDenied} by Group ${usersRole} ${username}. The comment section is now closed.`, new Date().toLocaleString()]
-        requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, approvedOrDenied, JSON.stringify(newComment)).then((response) => {
-            currSetOfComments.unshift(newComment)
-            this.setState({comments: currSetOfComments, currentInput: "", approveDenyStatusMessage: ""})
-            window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
-        }).catch((error) => {
-            this.setState({approveDenyStatusMessage: "Error: " + error, currentInput: ""})
+        // Confirm users membership before doing anything
+        this.userIsStillPartOfTheGroup().then((userInGroup) => {
+            if (userInGroup[0] && userInGroup[1] !== "Member") {
+                const currSetOfComments = this.state.comments
+                const newComment = ["Requestr Automated System", `This ticket has been ${approvedOrDenied} by Group ${usersRole} ${username}. The comment section is now closed.`, new Date().toLocaleString()]
+                requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, approvedOrDenied, JSON.stringify(newComment)).then((response) => {
+                    currSetOfComments.unshift(newComment)
+                    this.setState({comments: currSetOfComments, currentInput: "", approveDenyStatusMessage: ""})
+                    window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
+                }).catch((error) => {
+                    this.setState({approveDenyStatusMessage: "Error: " + error, currentInput: ""})
+                })
+            } else {
+                this.setState({approveDenyStatusMessage: ""})
+                window.location.href = `/Groups/${this.props.group.groupHash!}/active`
+            }
         })
     }
 
     archiveTicket = () => {
         this.setState({archiveStatusMessage: "Loading..."})
-        requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, 'Archived', JSON.stringify([])).then((response) => {
-            this.setState({archiveStatusMessage: ""})
-            window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
-        }).catch((error) => {
-            this.setState({archiveStatusMessage: "Error: " + error})
+        // Confirm users membership before doing anything
+        this.userIsStillPartOfTheGroup().then((userInGroup) => {
+            if (userInGroup[0] && userInGroup[1] !== 'Member') {
+                requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, 'Archived', JSON.stringify([])).then((response) => {
+                    this.setState({archiveStatusMessage: ""})
+                    window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
+                }).catch((error) => {
+                    this.setState({archiveStatusMessage: "Error: " + error})
+                })
+            } else {
+                this.setState({archiveStatusMessage: ""})
+                window.location.href = `/Groups/${this.props.group.groupHash!}/active`
+            }
+        })
+    }
+
+    userIsStillPartOfTheGroup = async () : Promise<[boolean, string]> => {
+        let isMember = false
+        let usersRole = "Non-Member"
+        await requestrGroupsAPI.getEntriesByUsername(this.props.group.username)
+            .then( (response) => {
+                response.data.forEach((group: Group) => {
+                    if (this.props.group.groupHash! === group.groupHash) {
+                        isMember = true
+                        usersRole = group.usersRole
+                    }
+                })
+            }).catch((error) => {
+            })
+        return new Promise<[boolean, string]>((resolve, reject) => {
+            resolve([isMember, usersRole])
         })
     }
 
