@@ -66,6 +66,7 @@
     display: block;
     text-align: left;
     padding: 0px 0px 0px 50px;
+    white-space: pre-wrap;
 }
 
 .comment-box {

@@ -111,7 +111,7 @@ class CreateGroup extends React.Component<Props, State> {
                     "public" : finalGroupToAdd.public
                 }).then((response) => {
                     this.setState({statusMessage: "Successfully created group! " + response.data})
-                    this.props.addGroup(finalGroupToAdd)
+                    window.location.href = `/Groups`
                 }).catch((error) => {
                     console.log(error)
                     this.setState({statusMessage: "Network error"})

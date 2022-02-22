@@ -13,6 +13,7 @@ interface State {
     commentStatusMessage: string
     approveDenyStatusMessage: string
     archiveStatusMessage: string
+    tokenExpired: boolean
 }
 
 interface Props {
@@ -30,7 +31,8 @@ class IndividualTicket extends React.Component<Props, State> {
             currentInput: "",
             commentStatusMessage: "",
             approveDenyStatusMessage: "",
-            archiveStatusMessage: ""
+            archiveStatusMessage: "",
+            tokenExpired: false
         }
     }
 
@@ -59,7 +61,8 @@ class IndividualTicket extends React.Component<Props, State> {
                                     this.setState({
                                         comments: currSetOfComments,
                                         currentInput: "",
-                                        commentStatusMessage: ""
+                                        commentStatusMessage: "",
+                                        tokenExpired: true
                                     })
                                 }).catch((error) => {
                                     this.setState({commentStatusMessage: "Error: " + error, currentInput: ""})
@@ -86,13 +89,38 @@ class IndividualTicket extends React.Component<Props, State> {
             if (userInGroup[0] && userInGroup[1] !== "Member") {
                 const currSetOfComments = this.state.comments
                 const newComment = ["Requestr Automated System", `This ticket has been ${approvedOrDenied} by Group ${usersRole} ${username}. The comment section is now closed.`, new Date().toLocaleString()]
-                requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, approvedOrDenied, JSON.stringify(newComment)).then((response) => {
-                    currSetOfComments.unshift(newComment)
-                    this.setState({comments: currSetOfComments, currentInput: "", approveDenyStatusMessage: ""})
-                    window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
-                }).catch((error) => {
-                    this.setState({approveDenyStatusMessage: "Error: " + error, currentInput: ""})
-                })
+
+                // Normal case of just hitting approve or deny without having commented first
+                if (!this.state.tokenExpired) {
+                    requestrTicketsAPI.interactWithTicket(this.props.ticket.token!, approvedOrDenied, JSON.stringify(newComment)).then((response) => {
+                        currSetOfComments.unshift(newComment)
+                        this.setState({comments: currSetOfComments, currentInput: "", approveDenyStatusMessage: ""})
+                        window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
+                    }).catch((error) => {
+                        this.setState({approveDenyStatusMessage: "Error: " + error, currentInput: ""})
+                    })
+
+                    // Special case of having commented first, thus invalidating the saved ticket. We must go back and get the most recent ticket.
+                } else {
+                    requestrTicketsAPI.getTicketExecutionsByStateMachineARN(
+                        this.props.group.stateMachineARN!,
+                        "RUNNING",
+                        this.props.group.username,
+                        this.props.group.usersRole,
+                        this.props.group.public).then((response ) => {
+                        response.data.forEach((execution: Execution) => {
+                            if (execution.request.ticketData.ticketId === this.props.ticket.ticketData.ticketId) {
+                                requestrTicketsAPI.interactWithTicket(execution.token, approvedOrDenied, JSON.stringify(newComment)).then((response) => {
+                                    currSetOfComments.unshift(newComment)
+                                    this.setState({comments: currSetOfComments, currentInput: "", approveDenyStatusMessage: ""})
+                                    window.location.href = '/Groups/' + this.props.group.groupHash + '/active'
+                                }).catch((error) => {
+                                    this.setState({approveDenyStatusMessage: "Error: " + error, currentInput: ""})
+                                })
+                            }
+                        })
+                    })
+                }
             } else {
                 this.setState({approveDenyStatusMessage: ""})
                 window.location.href = `/Groups/${this.props.group.groupHash!}/active`
