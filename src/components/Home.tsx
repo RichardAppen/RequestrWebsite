@@ -48,6 +48,7 @@ interface State {
     displayArchiveTicket: boolean
     displayManagingUsers: boolean
     displayNotifications: boolean
+    atAGlanceRef: React.RefObject<any>
 }
 
 interface Props {
@@ -70,7 +71,8 @@ class Home extends React.Component<Props, State> {
             displayManagingTicket: false,
             displayArchiveTicket: false,
             displayManagingUsers: false,
-            displayNotifications: false
+            displayNotifications: false,
+            atAGlanceRef: React.createRef()
         }
     }
 
@@ -134,6 +136,13 @@ class Home extends React.Component<Props, State> {
         }
     }
 
+    scrollToAtAGlance = () => {
+        this.state.atAGlanceRef.current.scrollIntoView({
+            block: 'start',
+            behavior: 'smooth'
+        })
+    }
+
     render() {
         return(
             <div>
@@ -170,7 +179,7 @@ class Home extends React.Component<Props, State> {
                 <div className='divider-special'>
 
                 </div>
-                <h1 className='main-title'>
+                <h1 ref={this.state.atAGlanceRef} className='main-title' onClick={this.scrollToAtAGlance}>
                     Requestr at a Glance
                 </h1>
                 <div className='glance-container'>
@@ -409,7 +418,7 @@ class Home extends React.Component<Props, State> {
                     Found a bug? Want to request a feature? Email support@requestr.org
                 </div>
                 <div className='bottom-section-2'>
-                    Interested in this project or tech stack? Check out the project on my personal website <a href='https://www.richardappen.com'>richardappen.com</a>
+                    Interested in this project or tech stack? Check out the project on my personal website <a href='https://www.richardappen.com/requestr'>richardappen.com/requestr</a>
                 </div>
             </div>
         )

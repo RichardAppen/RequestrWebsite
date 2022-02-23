@@ -150,7 +150,7 @@
 
 .glance-1-img{
     width: 60vw;
-    box-shadow: 10px 10px 10px 10px #ccc;
+    box-shadow: 10px 15px 15px 15px grey;
     border-radius: 25px;
     margin-left: 20px;
     margin-bottom: 40px;
@@ -160,7 +160,7 @@
 
 .glance-2-img {
     width: 60vw;
-    box-shadow: 10px 10px 10px 10px #ccc;
+    box-shadow: -10px 15px 15px 15px grey;
     border-radius: 25px;
     margin-bottom: 40px;
     object-fit: contain;
@@ -170,7 +170,7 @@
 .glance-2-2-img {
     width: 60vw;
     display: block;
-    box-shadow: 10px 10px 10px 10px #ccc;
+    box-shadow: 10px 15px 15px 15px grey;
     border-radius: 25px;
     margin-bottom: 40px;
     margin-left: 20px;
@@ -182,7 +182,7 @@
     width: 90vw;
     margin: auto;
     display: block;
-    box-shadow: 10px 10px 10px 10px #ccc;
+    box-shadow: 0px 15px 15px 10px grey;
     border-radius: 25px;
 }
 
@@ -190,7 +190,7 @@
     width: 90vw;
     margin: auto;
     display: block;
-    box-shadow: 10px 10px 10px 10px #ccc;
+    box-shadow: 0px 15px 15px 10px grey;
     border-radius: 25px;
 }
 
@@ -198,13 +198,13 @@
     width: 90vw;
     margin: auto;
     display: block;
-    box-shadow: 10px 10px 10px 10px #ccc;
+    box-shadow: 0px 15px 15px 10px grey;
     border-radius: 25px;
 }
 
 .glance-6-img {
     width: 28vw;
-    box-shadow: 10px 10px 10px 10px #ccc;
+    box-shadow: -10px 15px 15px 15px grey;
     border-radius: 25px;
     margin-bottom: 40px;
     object-fit: contain;

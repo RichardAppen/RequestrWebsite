@@ -147,11 +147,13 @@
     width: fit-content;
     font-size: small;
     font-weight: bold;
+    white-space: pre-wrap;
 }
 
 .single-comment-contents {
     width: fit-content;
     font-weight: bolder;
+    text-align: left;
 }
 
 .single-comment-date {
