@@ -10,7 +10,6 @@ import {RecentlyViewedTicket} from "../utils/RecentlyViewedTicket"
 interface State {
     ticketSelected?: Ticket
     renderTable: boolean
-    headerRef: React.RefObject<any>
 }
 
 interface Props {
@@ -19,6 +18,7 @@ interface Props {
     archived: boolean
     ticketFromURL?: Ticket
     handleIndividualTicketWasSelected: () => void
+    scrollToTopOfTable: () => void
 }
 
 class Table extends React.Component<Props, State> {
@@ -26,8 +26,7 @@ class Table extends React.Component<Props, State> {
         super(props);
 
         this.state = {
-            renderTable: true,
-            headerRef: React.createRef()
+            renderTable: true
         }
     }
 
@@ -70,16 +69,12 @@ class Table extends React.Component<Props, State> {
         } else {
             localStorage.setItem('recentlyViewedTickets', JSON.stringify([ticketAboutToBeViewed]))
         }
-        this.state.headerRef.current.scrollIntoView()
+        this.props.scrollToTopOfTable()
     }
 
     backButtonPressed = () => {
         this.setState({ticketSelected: undefined, renderTable: true})
         window.history.replaceState(null, "", `/Groups/${this.props.group.groupHash}/${this.props.archived ? 'archived' : 'active'}`)
-    }
-
-    scrollToTopOfTable = () => {
-        this.state.headerRef.current.scrollIntoView()
     }
 
     determineRowClass = (currentTicket: Ticket) : string => {
@@ -120,7 +115,7 @@ class Table extends React.Component<Props, State> {
 
     render() {
         return (
-            <div ref={this.state.headerRef} >
+            <div>
                 {this.state.renderTable && <div>
                 <div className='column-headers-row'>
                     <div className='ticketID-header'>

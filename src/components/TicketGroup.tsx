@@ -35,7 +35,6 @@ interface State {
     viewingArchive: boolean,
     ticketFromUrl?: Ticket,
     belowTableStatusMessage: string,
-    tableRef: React.RefObject<any>
     tableComponentRef: React.RefObject<Table>
 }
 
@@ -68,7 +67,6 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
             archiveStatusMessage: "",
             viewingArchive: false,
             belowTableStatusMessage: "",
-            tableRef: React.createRef(),
             tableComponentRef: React.createRef()
         }
     }
@@ -220,8 +218,13 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
         this.setState({renderNewTicketWindow: true, belowTableStatusMessage: ""})
     }
 
+    scrollToTopOfTable = () => {
+        const tableElement = document.getElementById('ticketTable')
+        tableElement!.scrollTop = 0
+    }
+
     backButtonPressed = () => {
-        this.state.tableComponentRef.current?.scrollToTopOfTable()
+        this.scrollToTopOfTable()
         this.setState({renderNewTicketWindow: false, belowTableStatusMessage: "", renderIndividualTicket: false})
        if (this.state.tableComponentRef.current) {
            this.state.tableComponentRef.current.backButtonPressed()
@@ -306,7 +309,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
     }
 
     handleArchiveButtonPressed = () => {
-        this.state.tableComponentRef.current?.scrollToTopOfTable()
+        this.scrollToTopOfTable()
         this.setState({viewingArchive: !this.state.viewingArchive, belowTableStatusMessage: "", renderIndividualTicket: false, renderNewTicketWindow: false})
         if (!this.state.viewingArchive) {
             window.history.replaceState(null, '', `/Groups/${this.props.hash}/archived`)
@@ -338,7 +341,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
 
     render() {
         return(
-            <div ref={this.state.tableRef}>
+            <div>
                 {(this.state.overallLoading) && <div className="status-message">
                     Loading...
                 </div>}
@@ -358,7 +361,7 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                 <button className='new-ticket-button' onClick={this.handleNewTicketPressed}> New Ticket </button>
                             </div>
                             <h1 className='ticket-title'> {this.state.viewingArchive ? 'Archived Tickets' : 'Tickets'} </h1>
-                            <div className='table'>
+                            <div id='ticketTable' className='table'>
                                 {this.state.renderNewTicketWindow ?
                                     <div>
                                         <div className='flex-header-pending'>
@@ -376,7 +379,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                                     tickets={this.state.archivedTickets}
                                                     group={this.state.group} archived={true}
                                                     ticketFromURL={this.state.ticketFromUrl}
-                                                    handleIndividualTicketWasSelected={this.handleIndividualTicketWasSelected}>
+                                                    handleIndividualTicketWasSelected={this.handleIndividualTicketWasSelected}
+                                                    scrollToTopOfTable={this.scrollToTopOfTable}>
                                                 </Table>
                                                 <div className="status-message">
                                                     {this.state.archiveStatusMessage}
@@ -391,7 +395,8 @@ class TicketGroup extends React.Component<Props & RouteProps, State> {
                                                     group={this.state.group}
                                                     archived={false}
                                                     ticketFromURL={this.state.ticketFromUrl}
-                                                    handleIndividualTicketWasSelected={this.handleIndividualTicketWasSelected}>
+                                                    handleIndividualTicketWasSelected={this.handleIndividualTicketWasSelected}
+                                                    scrollToTopOfTable={this.scrollToTopOfTable}>
                                                 </Table>
                                                 <div className="status-message">
                                                     {this.state.tableStatusMessage}
